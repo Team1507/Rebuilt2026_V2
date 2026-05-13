@@ -14,9 +14,11 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 
 import org.team1507.lib.core.util.MotorConfig;
 import org.team1507.lib.core.util.MotorConfig.ControlMode;
+import org.team1507.lib.core.util.MotorConfig.GravityType;
 
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
+import com.ctre.phoenix6.signals.ReverseLimitTypeValue;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
@@ -79,7 +81,14 @@ public class Constants {
         // Driver Station USB ports
         public static final int DRIVER_CONTROLLER   = 0;
         public static final int OPERATOR_CONTROLLER = 1;
+
+        // Intake
+        public static final int INTAKE_ARM_BLUE = 13;
+        public static final int INTAKE_ARM_YELLOW = 14;
+
+        public static final int INTAKE_ROLLER = 27;
     }
+
 
     // ============================================================
     // Swerve Drive — kinematics, motor configs, and tuning.
@@ -244,12 +253,68 @@ public class Constants {
         }
     }
 
+    public static final class kIntake {
+        public static final class kRoller {
+            
+            public static final double DUTY_LOW = 0.5;
+            public static final double DUTY_HIGH = 0.6;
+            public static final double DUTY_IDLE = 0.05;
+            public static final double OUTTAKE_DUTY = -0.35;
+            public static final double AUTO_DUTY = 1.0;
+            
+            public static final MotorConfig CONFIG =
+                MotorConfig.builder(ControlMode.DUTY_CYCLE)
+                    .withVoltageLimits(12.0, -12.0)
+                    .withStatorCurrentLimit(Amps.of(100))
+                    .withBrake()
+                    .build();
+        }
+
+        public static final class kArm {
+
+            public static final double MAX_ANGLE_DEGREES = 140.0;
+            public static final double MIN_ANGLE_DEGREES = 0.0;
+            public static final double DEPLOYED_ANGLE_DEGREES = 138.0;
+            public static final double RETRACTED_ANGLE_DEGREES = 82.0;
+            public static final double UPPER_ANGLE_DEGREES = 67.0;
+
+            public static final double ANGLE_TOLERANCE_DEGREES = 2.0;
+            public static final double MANUAL_POSITIVE_POWER = 0.4;
+            public static final double MANUAL_NEGATIVE_POWER = -0.4;
+
+            public static final MotorConfig BLU_CONFIG =
+                MotorConfig.builder(ControlMode.POSITION)
+                    .inverted(false)
+                    .withPID(0.5, 0.0, 0.0)
+                    .withGravity(0.1, GravityType.COSINE)
+                    .withReverseLimit(true, true, 0.0) // enable, autoset, reset to 0.0 
+                    .reverseLimitType(ReverseLimitTypeValue.NormallyOpen)
+                    .withVoltageLimits(8, -8)
+                    .withStatorCurrentLimit(Amps.of(100.0))
+                    .withBrake()
+                    .build();
+
+            public static final MotorConfig YEL_CONFIG =
+                MotorConfig.builder(ControlMode.POSITION)
+                    .inverted(true)
+                    .withPID(0.5, 0.0, 0.0)
+                    .withGravity(0.1, GravityType.COSINE)
+                    .withReverseLimit(true, true, 0.0) // enable, autoset, reset to 0.0 
+                    .reverseLimitType(ReverseLimitTypeValue.NormallyOpen)
+                    .withVoltageLimits(8, -8)
+                    .withStatorCurrentLimit(Amps.of(100.0))
+                    .withBrake()
+                    .build();
+
+        }
+    }
+    
+
     // ============================================================
     // QuestNav — Meta Quest headset vision configuration.
     // ============================================================
 
     public static final class kQuest {
-
         /**
          * Transform from robot center to the Quest's physical mounting point.
          *
