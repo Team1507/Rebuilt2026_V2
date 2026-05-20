@@ -56,6 +56,17 @@ public final class RobotBehaviors {
     // Prevent instantiation — this is a static utility class.
     private RobotBehaviors() {}
 
+    // public static Command deployAndRun() {
+    //     return HopperCommands.extend(hopper)
+    //         //.alongWith(IntakeRollerCommands.stop(roller)
+    //         .alongWith(
+    //             Commands.waitUntil(hopper::isHopperSafeForIntake)
+    //                 .andThen(
+    //                     IntakeArmCommands.down(arm)
+    //                         .alongWith(IntakeRollerCommands.intake(roller))
+    //                 )
+    //         );
+    // }
     // ─────────────────────────────────────────────────────────────────
     // FAILSAFE
     // ─────────────────────────────────────────────────────────────────

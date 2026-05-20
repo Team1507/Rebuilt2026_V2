@@ -1,3 +1,11 @@
+//  ██╗    ██╗ █████╗ ██████╗ ██╗      ██████╗  ██████╗██╗  ██╗███████╗
+//  ██║    ██║██╔══██╗██╔══██╗██║     ██╔═══██╗██╔════╝██║ ██╔╝██╔════╝
+//  ██║ █╗ ██║███████║██████╔╝██║     ██║   ██║██║     █████╔╝ ███████╗
+//  ██║███╗██║██╔══██║██╔══██╗██║     ██║   ██║██║     ██╔═██╗ ╚════██║
+//  ╚███╔███╔╝██║  ██║██║  ██║███████╗╚██████╔╝╚██████╗██║  ██╗███████║
+//   ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝
+//                           TEAM 1507 WARLOCKS
+
 package org.team1507.robot.subsystems;
 
 import org.team1507.lib.core.framework.Subsystem1507;
@@ -5,6 +13,9 @@ import org.team1507.lib.core.impl.ctre.Motor1507;
 import org.team1507.lib.core.util.CommandBuilder;
 import org.team1507.robot.Constants.RobotMap;
 import static org.team1507.robot.Constants.kIntake.kArm.*;
+
+import java.util.function.DoubleSupplier;
+
 import com.ctre.phoenix6.BaseStatusSignal;
 
 import edu.wpi.first.math.MathUtil;
@@ -32,13 +43,13 @@ public class IntakeArm extends Subsystem1507{
     public void periodic() {
         BaseStatusSignal.refreshAll(armSignals);
 
-        log("AngleDegrees",getCurrentAngle());
+        log("AngleDegrees",getAverageAngle());
         log("TargetDegrees",getTargetAngle());
         log("Stalled",isStalled());
     }
 
     public void setAngle(double angleDeg) {
-        targetAngleDeg = clampAngle(angleDeg);
+        double targetAngleDeg = clampAngle(angleDeg);
         double rotations = degToRotations(targetAngleDeg);
         
         BLUmotor.setPositionVoltage(rotations, 0.0);
@@ -54,7 +65,7 @@ public class IntakeArm extends Subsystem1507{
     }
 
     public void runManual(double duty) {
-        double positionDeg = getCurrentAngle();
+        double positionDeg = getAverageAngle();
 
         if (duty > 0 && positionDeg >= MAX_ANGLE_DEGREES) {
             stop();
@@ -104,7 +115,7 @@ public class IntakeArm extends Subsystem1507{
     }
 
     public boolean isAtTarget() {
-        return Math.abs(getCurrentAngle() - targetAngleDeg) < ANGLE_TOLERANCE_DEGREES;
+        return Math.abs(getAverageAngle() - targetAngleDeg) < ANGLE_TOLERANCE_DEGREES;
     }
 
     //uttility methods
@@ -131,6 +142,38 @@ public class IntakeArm extends Subsystem1507{
         if(timedOut || stalled)stop();
     });
 
+    }
+
+    public Command retractCommand() {
+        return new CommandBuilder(this)
+        .named("arm.retract")
+        .onInitialize(this ::retract)
+        .isFinished(this::isAtTarget)
+        .stallFinish(this::isStalled)
+        .onEnd((interupted, timedOut, stalled) ->{
+        if(timedOut || stalled)stop();
+    });
+    
+    }
+
+    public Command goToAngleCommand (double angleDeg) {
+        return new CommandBuilder(this)
+        .named("arm.goToAngle")
+        .onInitialize(() -> setAngle(angleDeg))
+        .isFinished(this::isAtTarget)
+        .stallFinish(this::isStalled)
+        .onEnd((interupted, timedOut, stalled) ->{
+        if(timedOut || stalled)stop();
+    });
+    }
+
+    public Command manualJoystickCommand(DoubleSupplier inputSupplier) {
+        return new CommandBuilder(this)
+        .named("arm.manualJoystick")
+        .onExecute(() -> runManual(inputSupplier.getAsDouble()))
+        .stallFinish(this::isStalled)
+        .onEnd((interupted, timedOut, stalled) -> stop())
+        .runsUntilInterrupted();
     }
 
 }

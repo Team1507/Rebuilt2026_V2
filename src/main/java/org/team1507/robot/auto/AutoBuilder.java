@@ -8,7 +8,7 @@
 
 package org.team1507.robot.auto;
 
-import org.team1507.robot.subsystems.Swerve;
+import org.team1507.robot.subsystems.*;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // AutoBuilder
@@ -36,6 +36,8 @@ public final class AutoBuilder {
 
     // ADD NEW SUBSYSTEMS HERE each year (e.g. climber, indexer, turret).
 
+    public static IntakeArm intakeArm;
+    public static IntakeRoller intakeRoller;
     // -------------------------------------------------------------------------
     // Initialization
     //
@@ -43,8 +45,10 @@ public final class AutoBuilder {
     // Add new subsystem parameters here as the robot grows each year.
     // -------------------------------------------------------------------------
 
-    public static void init(Swerve swerve) {
+    public static void init(Swerve swerve, IntakeArm intakeArm, IntakeRoller intakeRoller) {
         AutoBuilder.swerve = swerve;
+        AutoBuilder.intakeArm = intakeArm;
+        AutoBuilder.intakeRoller = intakeRoller;
     }
 
     // Prevent instantiation — this is a static utility class.

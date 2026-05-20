@@ -34,12 +34,16 @@ public final class Robot extends LoggedRobot {
 
     public final Swerve            swerve;
     public final QuestNavSubsystem questNav;
+    public final IntakeArm        intakeArm;
+    public final IntakeRoller     intakeRoller;
 
     // -------------------------------------------------------------------------
     // Controllers
     // -------------------------------------------------------------------------
 
-    private final CommandXboxController driver;
+    private final CommandXboxController topDriver;
+    private final CommandXboxController bottomDriver;
+    
 
     // -------------------------------------------------------------------------
     // Autonomous
@@ -61,6 +65,8 @@ public final class Robot extends LoggedRobot {
             swerve::resetPose,
             kQuest.ROBOT_TO_QUEST
         );
+        intakeArm = new IntakeArm();
+        intakeRoller = new IntakeRoller();
 
         // Pre-match pose preset buttons (visible in Elastic while disabled).
         // Place the robot at the known starting position and press the matching
@@ -76,12 +82,13 @@ public final class Robot extends LoggedRobot {
             .publishToDashboard();
 
         // Autonomous chooser
-        AutoBuilder.init(swerve);
+        AutoBuilder.init(swerve, intakeArm, intakeRoller);
         autoChooser.setDefaultOption("Drive Forward", DriveForwardAuto.build());
         SmartDashboard.putData("Auto Mode", autoChooser);
 
         // Controllers and bindings
-        driver = new CommandXboxController(RobotMap.DRIVER_CONTROLLER);
+        topDriver = new CommandXboxController(RobotMap.DRIVER_CONTROLLER);
+        bottomDriver = new CommandXboxController(RobotMap.OPERATOR_CONTROLLER);
         configureBindings();
         configureDefaultBindings();
     }
@@ -95,23 +102,34 @@ public final class Robot extends LoggedRobot {
         // ── Driver — swerve utilities ──────────────────────────────────────
 
         // Swerve brake — hold Start to lock wheels in X pattern, release to resume driving
-        driver.start().whileTrue(swerve.brakeCommand());
+        topDriver.start().whileTrue(swerve.brakeCommand());
 
         // Failsafe — cancels all running commands (see RobotBehaviors for details)
-        driver.back().onTrue(RobotBehaviors.failsafe());
+        topDriver.back().onTrue(RobotBehaviors.failsafe());
 
         // Point the robot toward the opposing alliance wall, then press A
         // to zero the gyro. Do this after any hot code deploy without a power cycle.
-        driver.a().onTrue(swerve.zeroHeadingCommand());
+        topDriver.a().onTrue(swerve.zeroHeadingCommand());
+
+         // ----------------------------
+        // Intake
+        // ----------------------------
+        bottomDriver.b()
+        .whileTrue(intakeArm.deployCommand())
+        .whileTrue(intakeRoller.runReverseCommand())
+        //.whileTrue(AgitatorCommands.toOutake(agitatorSubsystem))
+        .onFalse(intakeArm.retractCommand())
+        .onFalse(intakeRoller.stopCommand());
+        //.whileFalse(AgitatorCommands.toStop(agitatorSubsystem));
     }
 
     private void configureDefaultBindings() {
 
         swerve.setDefaultCommand(
             swerve.driveCommand(() -> {
-                double x   = MathUtil.applyDeadband(-driver.getLeftY(),  0.12);
-                double y   = MathUtil.applyDeadband(-driver.getLeftX(),  0.12);
-                double rot = MathUtil.applyDeadband(-driver.getRightX(), 0.12);
+                double x   = MathUtil.applyDeadband(-topDriver.getLeftY(),  0.12);
+                double y   = MathUtil.applyDeadband(-topDriver.getLeftX(),  0.12);
+                double rot = MathUtil.applyDeadband(-topDriver.getRightX(), 0.12);
 
                 return ChassisSpeeds.fromFieldRelativeSpeeds(
                     x   * kSwerve.MAX_SPEED,

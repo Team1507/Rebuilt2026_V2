@@ -87,9 +87,43 @@ public class Constants {
         public static final int INTAKE_ARM_YELLOW = 14;
 
         public static final int INTAKE_ROLLER = 27;
+
+        // Hopper
+        public static final int HOPPER = 16;
+        public static final int HOPPER_DIO = 8;
     }
 
+    // ╔═══════════════════════════════════════════════════════════════╗
+    // ║                       HOPPER CONSTANTS                        ║
+    // ║                (Arcane Material Buffer Chamber)               ║
+    // ╚═══════════════════════════════════════════════════════════════╝
 
+    public static final class kHopper {
+
+        /** Hopper target positions (in degrees). */ 
+        public static final double RETRACTED_POS = 0.0; 
+        public static final double EXTENDED_POS = 12.0;
+        public static final double SAFE_EXTENDED = 10.0;
+        public static final double MAX_POS = 12.1;
+
+        public static final double MANUAL_POSITIVE_POWER = -0.2;
+        public static final double MANUAL_NEGATIVE_POWER = 0.2;
+        
+
+        // /** Gear ratio for the hopper gearbox. */
+        // public static final GearRatio RATIO = 
+        //     GearRatio(
+        //         .gearBox(20, 1)
+        //         .withScaling(0.0, 46.3, 12.0));
+    
+        public static final MotorConfig CONFIG =
+            MotorConfig.builder(ControlMode.POSITION)
+                .withPID(0.11, 0.0, 0.02)
+                .withVoltageLimits(8.0, -8.0)
+                .withStatorCurrentLimit(Amps.of(100))
+                .withBrake()
+                .build();
+    }
     // ============================================================
     // Swerve Drive — kinematics, motor configs, and tuning.
     // ============================================================
@@ -256,16 +290,18 @@ public class Constants {
     public static final class kIntake {
         public static final class kRoller {
             
-            public static final double DUTY_LOW = 0.5;
-            public static final double DUTY_HIGH = 0.6;
-            public static final double DUTY_IDLE = 0.05;
-            public static final double OUTTAKE_DUTY = -0.35;
-            public static final double AUTO_DUTY = 1.0;
+            public static final double TORQUE_LOW = 5.0;
+            public static final double TORQUE_HIGH = 15.0;
+            public static final double TORQUE_IDLE = 0.5;
+            public static final double OUTTAKE_TORQUE = -10.0;
+            public static final double AUTO_TORQUE = 10.0;
             
             public static final MotorConfig CONFIG =
-                MotorConfig.builder(ControlMode.DUTY_CYCLE)
-                    .withVoltageLimits(12.0, -12.0)
-                    .withStatorCurrentLimit(Amps.of(100))
+                MotorConfig.builder(ControlMode.TORQUE)
+                    .withStatorCurrentLimit(Amps.of(20))
+                    .withSupplyCurrentLimit(Amps.of(40))
+                    .withPeakTorqueCurrent(20.0, -10.0)
+                    .withSimVelocityRps(50)
                     .withBrake()
                     .build();
         }
