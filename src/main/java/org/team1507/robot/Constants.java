@@ -91,6 +91,12 @@ public class Constants {
         // Hopper
         public static final int HOPPER = 16;
         public static final int HOPPER_DIO = 8;
+
+        // Shooter
+        public static final int SHOOTER_BLU = 19;
+        public static final int SHOOTER_YEL = 17;
+        public static final int SHOOTER_BLU_DIO = 6;
+        public static final int SHOOTER_YEL_DIO = 7;
     }
 
     // ╔═══════════════════════════════════════════════════════════════╗
@@ -345,6 +351,39 @@ public class Constants {
         }
     }
     
+
+    // ============================================================
+    // Shooter — dual flywheel (BLU CAN 19, YEL CAN 17), 1:1 gear ratio.
+    // ============================================================
+
+    public static final class kShooter {
+
+        public static final double MAX_RPM       = 4000.0;
+        public static final double LOB_RPM       = 2650.0;
+        public static final double SAFE_RPM      = 2800.0;
+        public static final double IDLE_RPM      = 500.0;
+        public static final double TOLERANCE_RPM = 100.0;
+
+        public static final MotorConfig BLU_CONFIG =
+            MotorConfig.builder(ControlMode.VELOCITY)
+                .inverted(true)
+                .withPID(0.1, 0.0, 0.02)
+                .withFeedforward(0.12231, 0.32, 0.0)
+                .withVoltageLimits(12.0, -12.0)
+                .withStatorCurrentLimit(Amps.of(110))
+                .withSimVelocityRps(66.7)
+                .build();
+
+        public static final MotorConfig YEL_CONFIG =
+            MotorConfig.builder(ControlMode.VELOCITY)
+                .inverted(false)
+                .withPID(0.1, 0.0, 0.02)
+                .withFeedforward(0.12231, 0.32, 0.0)
+                .withVoltageLimits(12.0, -12.0)
+                .withStatorCurrentLimit(Amps.of(110))
+                .withSimVelocityRps(66.7)
+                .build();
+    }
 
     // ============================================================
     // QuestNav — Meta Quest headset vision configuration.

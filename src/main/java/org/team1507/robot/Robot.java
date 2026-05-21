@@ -23,6 +23,7 @@ import org.team1507.robot.auto.nodes.Nodes;
 import org.team1507.robot.auto.routines.*;
 import org.team1507.robot.Constants.RobotMap;
 import org.team1507.robot.Constants.kQuest;
+import org.team1507.robot.Constants.kShooter;
 import org.team1507.robot.Constants.kSwerve;
 import org.team1507.robot.subsystems.*;
 
@@ -34,8 +35,9 @@ public final class Robot extends LoggedRobot {
 
     public final Swerve            swerve;
     public final QuestNavSubsystem questNav;
-    public final IntakeArm        intakeArm;
-    public final IntakeRoller     intakeRoller;
+    public final IntakeArm         intakeArm;
+    public final IntakeRoller      intakeRoller;
+    public final Shooter           shooter;
 
     // -------------------------------------------------------------------------
     // Controllers
@@ -67,6 +69,7 @@ public final class Robot extends LoggedRobot {
         );
         intakeArm = new IntakeArm();
         intakeRoller = new IntakeRoller();
+        shooter = new Shooter();
 
         // Pre-match pose preset buttons (visible in Elastic while disabled).
         // Place the robot at the known starting position and press the matching
@@ -82,7 +85,7 @@ public final class Robot extends LoggedRobot {
             .publishToDashboard();
 
         // Autonomous chooser
-        AutoBuilder.init(swerve, intakeArm, intakeRoller);
+        AutoBuilder.init(swerve, intakeArm, intakeRoller, shooter);
         autoChooser.setDefaultOption("Drive Forward", DriveForwardAuto.build());
         SmartDashboard.putData("Auto Mode", autoChooser);
 
@@ -121,6 +124,13 @@ public final class Robot extends LoggedRobot {
         .onFalse(intakeArm.retractCommand())
         .onFalse(intakeRoller.stopCommand());
         //.whileFalse(AgitatorCommands.toStop(agitatorSubsystem));
+
+        // ----------------------------
+        // Shooter
+        // ----------------------------
+        bottomDriver.rightTrigger(0.5)
+            .whileTrue(shooter.spinUpCommand(kShooter.SAFE_RPM))
+            .onFalse(shooter.stopCommand());
     }
 
     private void configureDefaultBindings() {

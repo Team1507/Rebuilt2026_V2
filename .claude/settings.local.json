@@ -7,7 +7,9 @@
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Public\\\\wpilib\\\\\" -ErrorAction SilentlyContinue | Select-Object Name, PSIsContainer)",
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Public\\\\wpilib\\\\\" -Directory -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Name | Sort-Object -Descending)",
       "PowerShell(head -100)",
-      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\stude\\\\.vscode\\\\extensions\\\\wpilibsuite.vscode-wpilib-2023.0.0\\\\resources\\\\\" -Recurse -File | Where-Object { $_.DirectoryName -match \"\\(commands|templates\\)\" -and -not \\($_.DirectoryName -match \"examples\"\\) } | Select-Object -ExpandProperty FullName | Sort-Object)"
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\stude\\\\.vscode\\\\extensions\\\\wpilibsuite.vscode-wpilib-2023.0.0\\\\resources\\\\\" -Recurse -File | Where-Object { $_.DirectoryName -match \"\\(commands|templates\\)\" -and -not \\($_.DirectoryName -match \"examples\"\\) } | Select-Object -ExpandProperty FullName | Sort-Object)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\KellyTopolski\\\\Documents\\\\1507\\\\Rebuilt2026_V2\" -Recurse -Directory | Select-Object -First 30 | ForEach-Object { $_.FullName })",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\KellyTopolski\\\\Documents\\\\1507\\\\Rebuilt2026_V2\\\\src\" -Recurse | ForEach-Object { $_.FullName })"
     ]
   }
 }
