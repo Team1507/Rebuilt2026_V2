@@ -1,15 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Bash(ls -la \"C:\\\\Users\\\\stude\\\\.wpilib\\\\\" 2>/dev/null || echo \"Not found via bash\")",
-      "Read(//c/Users/stude/.wpilib\" 2>/dev/**)",
       "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\stude\\\\AppData\\\\Local\\\\Code\\\\User\\\\extensions\" -ErrorAction SilentlyContinue | Where-Object { $_.Name -match \"wpilib|frc\" })",
-      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Public\\\\wpilib\\\\\" -ErrorAction SilentlyContinue | Select-Object Name, PSIsContainer)",
-      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Public\\\\wpilib\\\\\" -Directory -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Name | Sort-Object -Descending)",
       "PowerShell(head -100)",
-      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\stude\\\\.vscode\\\\extensions\\\\wpilibsuite.vscode-wpilib-2023.0.0\\\\resources\\\\\" -Recurse -File | Where-Object { $_.DirectoryName -match \"\\(commands|templates\\)\" -and -not \\($_.DirectoryName -match \"examples\"\\) } | Select-Object -ExpandProperty FullName | Sort-Object)",
-      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\KellyTopolski\\\\Documents\\\\1507\\\\Rebuilt2026_V2\" -Recurse -Directory | Select-Object -First 30 | ForEach-Object { $_.FullName })",
-      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\KellyTopolski\\\\Documents\\\\1507\\\\Rebuilt2026_V2\\\\src\" -Recurse | ForEach-Object { $_.FullName })"
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\stude\\\\.vscode\\\\extensions\\\\wpilibsuite.vscode-wpilib-2026.2.1\\\\resources\\\\\" -Recurse -File | Where-Object { $_.DirectoryName -match \"\\(commands|templates\\)\" -and -not \\($_.DirectoryName -match \"examples\"\\) } | Select-Object -ExpandProperty FullName | Sort-Object)",
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\Public\\\\wpilib\\\\2025\\\\jdk\\\\bin\\\\java.exe\" -ErrorAction SilentlyContinue; Get-ChildItem \"C:\\\\Users\\\\Public\\\\wpilib\\\\2026\\\\jdk\\\\bin\\\\java.exe\" -ErrorAction SilentlyContinue; Get-ChildItem \"$env:USERPROFILE\\\\wpilib\" -ErrorAction SilentlyContinue | Select-Object Name)",
+      "PowerShell($env:JAVA_HOME = \"C:\\\\Users\\\\Public\\\\wpilib\\\\2026\\\\jdk\"; cd \"C:\\\\Users\\\\stude\\\\Documents\\\\Programs\\\\Rebuilt2026_V2\"; .\\\\gradlew.bat compileJava 2>&1 | Select-Object -Last 60)",
+      "PowerShell($env:JAVA_HOME = \"C:\\\\Users\\\\Public\\\\wpilib\\\\2026\\\\jdk\"; cd \"C:\\\\Users\\\\stude\\\\Documents\\\\Programs\\\\Rebuilt2026_V2\"; .\\\\gradlew.bat compileJava 2>&1 | Select-Object -Last 10)",
+      "PowerShell($extPath = \"$env:USERPROFILE\\\\.vscode\\\\extensions\\\\team1507.subsystem-tools-1.0.0\"; Test-Path $extPath; if \\(Test-Path $extPath\\) { Get-ChildItem $extPath })"
     ]
   }
 }
