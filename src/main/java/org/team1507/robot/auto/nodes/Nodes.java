@@ -139,6 +139,8 @@ public final class Nodes {
             public static final Translation2d CORNER_FAR_RIGHT  = Node.location(4.242, 3.508);
             public static final Translation2d CORNER_NEAR_RIGHT = Node.location(3.048, 3.508);
 
+            public static final Translation2d CENTER = Node.location(3.645, 4.105);
+
             // Ordered clockwise from top-left. NodeBoundsTest walks these edges
             // to check if any robot node's spin circle intersects the structure.
             public static final Translation2d[] CORNERS = {

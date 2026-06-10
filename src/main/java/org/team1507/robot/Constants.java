@@ -441,7 +441,7 @@ public class Constants {
         public static final double LOB_RPM       = 2650.0;
         public static final double SAFE_RPM      = 2800.0;
         public static final double IDLE_RPM      = 500.0;
-        public static final double TOLERANCE_RPM = 100.0;
+        public static final double TOLERANCE_RPM = 20.0;
 
         public static final MotorConfig BLU_CONFIG =
             MotorConfig.builder(ControlMode.VELOCITY)
