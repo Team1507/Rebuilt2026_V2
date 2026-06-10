@@ -239,12 +239,18 @@ public final class Motor1507 {
             double dt = (simLastTimestamp < 0) ? 0.02 : now - simLastTimestamp;
             simLastTimestamp = now;
 
-            if (!Double.isNaN(simTargetRotations) && simVelocityRps > 0) {
-                double maxStep = simVelocityRps * dt;
-                double error = simTargetRotations - simRotorPosition;
-                double actualStep = Math.copySign(Math.min(Math.abs(error), maxStep), error);
-                simRotorPosition += actualStep;
-                simRotorVelocity = (dt > 1e-6) ? actualStep / dt : 0.0;
+            if (!Double.isNaN(simTargetRotations)) {
+                if (simVelocityRps <= 0.0) {
+                    // simVelocityRps == 0 means "instant" — jump to target immediately.
+                    simRotorPosition = simTargetRotations;
+                    simRotorVelocity = 0.0;
+                } else {
+                    double maxStep = simVelocityRps * dt;
+                    double error = simTargetRotations - simRotorPosition;
+                    double actualStep = Math.copySign(Math.min(Math.abs(error), maxStep), error);
+                    simRotorPosition += actualStep;
+                    simRotorVelocity = (dt > 1e-6) ? actualStep / dt : 0.0;
+                }
             } else {
                 simRotorPosition += simRotorVelocity * dt;
             }

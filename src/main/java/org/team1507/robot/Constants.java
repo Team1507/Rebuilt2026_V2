@@ -142,6 +142,7 @@ public class Constants {
                 .withPID(0.11, 0.0, 0.02)
                 .withVoltageLimits(8.0, -8.0)
                 .withStatorCurrentLimit(Amps.of(100))
+                .withSimVelocityRps(30)
                 .withBrake()
                 .build();
     }
@@ -344,10 +345,11 @@ public class Constants {
                     .inverted(false)
                     .withPID(0.5, 0.0, 0.0)
                     .withGravity(0.1, GravityType.COSINE)
-                    .withReverseLimit(true, true, 0.0) // enable, autoset, reset to 0.0 
+                    .withReverseLimit(true, true, 0.0) // enable, autoset, reset to 0.0
                     .reverseLimitType(ReverseLimitTypeValue.NormallyOpen)
                     .withVoltageLimits(8, -8)
                     .withStatorCurrentLimit(Amps.of(100.0))
+                    .withSimVelocityRps(0.5)
                     .withBrake()
                     .build();
 
@@ -356,10 +358,11 @@ public class Constants {
                     .inverted(true)
                     .withPID(0.5, 0.0, 0.0)
                     .withGravity(0.1, GravityType.COSINE)
-                    .withReverseLimit(true, true, 0.0) // enable, autoset, reset to 0.0 
+                    .withReverseLimit(true, true, 0.0) // enable, autoset, reset to 0.0
                     .reverseLimitType(ReverseLimitTypeValue.NormallyOpen)
                     .withVoltageLimits(8, -8)
                     .withStatorCurrentLimit(Amps.of(100.0))
+                    .withSimVelocityRps(0.5)
                     .withBrake()
                     .build();
 
