@@ -26,7 +26,7 @@ public class IntakeArm extends Subsystem1507{
     private final Motor1507 YELmotor;
     private final BaseStatusSignal[] armSignals;
 
-    private final double targetAngleDeg = 0.0;
+    private double targetAngleDeg = 0.0;
     public IntakeArm() {
         super ("IntakeArm");
         BLUmotor = new Motor1507(key("BLU"), Motor1507.Type.FXS, RobotMap.INTAKE_ARM_BLUE,  BLU_CONFIG);
@@ -55,9 +55,9 @@ public class IntakeArm extends Subsystem1507{
     }
 
     public void setAngle(double angleDeg) {
-        double targetAngleDeg = clampAngle(angleDeg);
-        double rotations = degToRotations(targetAngleDeg);
-        
+        this.targetAngleDeg = clampAngle(angleDeg);
+        double rotations = degToRotations(this.targetAngleDeg);
+
         BLUmotor.setPositionVoltage(rotations, 0.0);
         YELmotor.setPositionVoltage(rotations, 0.0);
     }

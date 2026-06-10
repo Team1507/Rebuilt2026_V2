@@ -130,13 +130,33 @@ public final class RobotBehaviors {
      * <p>Binding: {@code operator.rightBumper().whileTrue(RobotBehaviors.shootFixedRPM(..., kShooter.SAFE_RPM));}
      */
     public static Command shootFixedRPM(Shooter shooter, Feeder feeder, Agitator agitator, double rpm) {
-        return Commands.sequence(
-            shooter.setRPMCommand(rpm),
-            Commands.waitUntil(shooter::atVelocity),
-            Commands.parallel(
-                feeder.feedCommand(),
-                agitator.toShooterCommand()
+        return Commands.deadline(
+            shooter.spinUpCommand(rpm),
+            Commands.sequence(
+                Commands.waitUntil(shooter::atVelocity),
+                Commands.parallel(
+                    feeder.feedCommand(),
+                    agitator.toShooterCommand()
+                )
             )
         ).withName("Behaviors.shootFixedRPM(" + rpm + ")");
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // OUTTAKE
+    // ─────────────────────────────────────────────────────────────────
+
+    /**
+     * Deploys the intake arm, reverses the intake roller, and runs the agitator
+     * in the outtake direction simultaneously. Runs until interrupted.
+     *
+     * <p>Binding: {@code operator.b().whileTrue(RobotBehaviors.outtake(...));}
+     */
+    public static Command outtake(IntakeArm intakeArm, IntakeRoller intakeRoller, Agitator agitator) {
+        return Commands.parallel(
+            intakeArm.deployCommand(),
+            intakeRoller.runReverseCommand(),
+            agitator.toOuttakeCommand()
+        ).withName("Behaviors.outtake");
     }
 }

@@ -132,12 +132,8 @@ public final class Robot extends LoggedRobot {
 
         // B button: outtake (arm deploy + roller reverse + agitator out)
         bottomDriver.b()
-            .whileTrue(intakeArm.deployCommand())
-            .whileTrue(intakeRoller.runReverseCommand())
-            .whileTrue(agitator.toOuttakeCommand())
-            .onFalse(intakeArm.retractCommand())
-            .onFalse(intakeRoller.stopCommand())
-            .onFalse(agitator.stopCommand());
+            .whileTrue(RobotBehaviors.outtake(intakeArm, intakeRoller, agitator))
+            .onFalse(Commands.parallel(RobotBehaviors.stowIntake(intakeArm, intakeRoller), agitator.stopCommand()));
 
         // ----------------------------
         // Shooter
@@ -145,17 +141,11 @@ public final class Robot extends LoggedRobot {
 
         // Right bumper: safe shot (spin up + feed on velocity)
         bottomDriver.rightBumper()
-            .whileTrue(shooter.spinUpCommand(kShooter.SAFE_RPM))
-            .whileTrue(Commands.waitUntil(shooter::atVelocity)
-                .andThen(Commands.parallel(feeder.feedCommand(), agitator.toShooterCommand())))
-            .onFalse(Commands.parallel(shooter.stopCommand(), feeder.stopCommand(), agitator.stopCommand()));
+            .whileTrue(RobotBehaviors.shootFixedRPM(shooter, feeder, agitator, kShooter.SAFE_RPM));
 
         // Left bumper: lob shot
         bottomDriver.leftBumper()
-            .whileTrue(shooter.spinUpCommand(kShooter.LOB_RPM))
-            .whileTrue(Commands.waitUntil(shooter::atVelocity)
-                .andThen(Commands.parallel(feeder.feedCommand(), agitator.toShooterCommand())))
-            .onFalse(Commands.parallel(shooter.stopCommand(), feeder.stopCommand(), agitator.stopCommand()));
+            .whileTrue(RobotBehaviors.shootFixedRPM(shooter, feeder, agitator, kShooter.LOB_RPM));
 
         // Right trigger (legacy / direct spin-up without feed)
         bottomDriver.rightTrigger(0.5)
