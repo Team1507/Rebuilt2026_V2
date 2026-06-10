@@ -29,8 +29,8 @@ public class IntakeArm extends Subsystem1507{
     private final double targetAngleDeg = 0.0;
     public IntakeArm() {
         super ("IntakeArm");
-        BLUmotor = new Motor1507(key("BLU"), Motor1507.Type.FXS, RobotMap.INTAKE_ARM_BLUE);
-        YELmotor = new Motor1507(key("YEL"), Motor1507.Type.FXS, RobotMap.INTAKE_ARM_YELLOW);
+        BLUmotor = new Motor1507(key("BLU"), Motor1507.Type.FXS, RobotMap.INTAKE_ARM_BLUE,  BLU_CONFIG);
+        YELmotor = new Motor1507(key("YEL"), Motor1507.Type.FXS, RobotMap.INTAKE_ARM_YELLOW, YEL_CONFIG);
 
         BaseStatusSignal[] BLU = BLUmotor.getSignals();
         BaseStatusSignal[] YEL = YELmotor.getSignals();
