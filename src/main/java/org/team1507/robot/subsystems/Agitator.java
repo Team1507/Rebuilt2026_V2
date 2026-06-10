@@ -1,0 +1,117 @@
+//  ██╗    ██╗ █████╗ ██████╗ ██╗      ██████╗  ██████╗██╗  ██╗███████╗
+//  ██║    ██║██╔══██╗██╔══██╗██║     ██╔═══██╗██╔════╝██║ ██╔╝██╔════╝
+//  ██║ █╗ ██║███████║██████╔╝██║     ██║   ██║██║     █████╔╝ ███████╗
+//  ██║███╗██║██╔══██║██╔══██╗██║     ██║   ██║██║     ██╔═██╗ ╚════██║
+//  ╚███╔███╔╝██║  ██║██║  ██║███████╗╚██████╔╝╚██████╗██║  ██╗███████║
+//   ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝
+//                           TEAM 1507 WARLOCKS
+
+package org.team1507.robot.subsystems;
+
+import static org.team1507.robot.Constants.kAgitator.*;
+
+import org.team1507.lib.core.framework.Subsystem1507;
+import org.team1507.lib.core.impl.ctre.Motor1507;
+import org.team1507.lib.core.util.CommandBuilder;
+import org.team1507.robot.Constants.RobotMap;
+import org.team1507.robot.Constants.kAgitator;
+
+import com.ctre.phoenix6.BaseStatusSignal;
+
+import edu.wpi.first.wpilibj2.command.Command;
+
+public class Agitator extends Subsystem1507 {
+
+    private final Motor1507 bluMotor;
+    private final Motor1507 yelMotor;
+    private final BaseStatusSignal[] agitatorSignals;
+
+    public Agitator() {
+        super("Agitator");
+
+        bluMotor = new Motor1507(key("BLU"), Motor1507.Type.FX, RobotMap.AGITATOR_BLU, BLU_CONFIG);
+        yelMotor = new Motor1507(key("YEL"), Motor1507.Type.FX, RobotMap.AGITATOR_YEL, YEL_CONFIG);
+
+        BaseStatusSignal[] blu = bluMotor.getSignals();
+        BaseStatusSignal[] yel = yelMotor.getSignals();
+        agitatorSignals = new BaseStatusSignal[blu.length + yel.length];
+        System.arraycopy(blu, 0, agitatorSignals, 0, blu.length);
+        System.arraycopy(yel, 0, agitatorSignals, blu.length, yel.length);
+    }
+
+    // =========================================================================
+    // Control
+    // =========================================================================
+
+
+    // change torque force constant later after testing
+    public void toShooter() {
+        bluMotor.runTorqueCurrent(kAgitator.TORQUE_LOW);
+        yelMotor.runTorqueCurrent(kAgitator.TORQUE_LOW);
+    }
+
+    public void toIntake() {
+        bluMotor.runTorqueCurrent(kAgitator.TORQUE_LOW);
+        yelMotor.runTorqueCurrent(kAgitator.TORQUE_LOW);
+    }
+
+    public void toOuttake() {
+        bluMotor.runTorqueCurrent(kAgitator.TORQUE_LOW);
+        yelMotor.runTorqueCurrent(kAgitator.TORQUE_LOW);
+    }
+
+    public void stop() {
+        bluMotor.stop();
+        yelMotor.stop();
+    }
+
+    // =========================================================================
+    // Periodic
+    // =========================================================================
+
+    @Override
+    public void periodic() {
+        BaseStatusSignal.refreshAll(agitatorSignals);
+
+        log("BLU/DutyCycle",  bluMotor.getRotorVelocity());
+        log("YEL/DutyCycle",  yelMotor.getRotorVelocity());
+        log("BLU/StatorAmps", bluMotor.getStatorCurrent());
+        log("YEL/StatorAmps", yelMotor.getStatorCurrent());
+    }
+
+    // =========================================================================
+    // Commands
+    // =========================================================================
+
+    /** Runs agitators toward the shooter. Stops on interrupt. */
+    public Command toShooterCommand() {
+        return new CommandBuilder(this)
+            .named("agitator.toShooter")
+            .onExecute(this::toShooter)
+            .onEnd((interrupted, timedOut, stalled) -> stop());
+    }
+
+    /** Runs agitators toward the intake. Stops on interrupt. */
+    public Command toIntakeCommand() {
+        return new CommandBuilder(this)
+            .named("agitator.toIntake")
+            .onExecute(this::toIntake)
+            .onEnd((interrupted, timedOut, stalled) -> stop());
+    }
+
+    /** Runs agitators in outtake direction. Stops on interrupt. */
+    public Command toOuttakeCommand() {
+        return new CommandBuilder(this)
+            .named("agitator.toOuttake")
+            .onExecute(this::toOuttake)
+            .onEnd((interrupted, timedOut, stalled) -> stop());
+    }
+
+    /** Stops both agitators immediately. Finishes in one loop. */
+    public Command stopCommand() {
+        return new CommandBuilder(this)
+            .named("agitator.stop")
+            .onInitialize(this::stop)
+            .isFinished(true);
+    }
+}

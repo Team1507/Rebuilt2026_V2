@@ -12,6 +12,13 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 
+import org.team1507.robot.subsystems.Agitator;
+import org.team1507.robot.subsystems.Feeder;
+import org.team1507.robot.subsystems.Hopper;
+import org.team1507.robot.subsystems.IntakeArm;
+import org.team1507.robot.subsystems.IntakeRoller;
+import org.team1507.robot.subsystems.Shooter;
+
 // ─────────────────────────────────────────────────────────────────────────────
 // RobotBehaviors
 //
@@ -56,17 +63,6 @@ public final class RobotBehaviors {
     // Prevent instantiation — this is a static utility class.
     private RobotBehaviors() {}
 
-    // public static Command deployAndRun() {
-    //     return HopperCommands.extend(hopper)
-    //         //.alongWith(IntakeRollerCommands.stop(roller)
-    //         .alongWith(
-    //             Commands.waitUntil(hopper::isHopperSafeForIntake)
-    //                 .andThen(
-    //                     IntakeArmCommands.down(arm)
-    //                         .alongWith(IntakeRollerCommands.intake(roller))
-    //                 )
-    //         );
-    // }
     // ─────────────────────────────────────────────────────────────────
     // FAILSAFE
     // ─────────────────────────────────────────────────────────────────
@@ -88,5 +84,59 @@ public final class RobotBehaviors {
         return Commands.runOnce(CommandScheduler.getInstance()::cancelAll)
             .withName("Failsafe.cancelAll")
             .ignoringDisable(true);
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // INTAKE
+    // ─────────────────────────────────────────────────────────────────
+
+    /**
+     * Extends the hopper, then—once extended—deploys the intake arm and spins
+     * the intake roller. All three run until interrupted.
+     *
+     * <p>Binding: {@code operator.leftTrigger(0.5).whileTrue(RobotBehaviors.deployAndIntake(...));}
+     */
+    public static Command deployAndIntake(Hopper hopper, IntakeArm intakeArm, IntakeRoller intakeRoller) {
+        return Commands.sequence(
+            hopper.extendCommand(),
+            Commands.parallel(
+                intakeArm.deployCommand(),
+                intakeRoller.runCommand()
+            )
+        ).withName("Behaviors.deployAndIntake");
+    }
+
+    /**
+     * Retracts the intake arm and stops the roller. Used to stow after intaking.
+     *
+     * <p>Binding: release of the intake trigger ({@code .onFalse(...)}).
+     */
+    public static Command stowIntake(IntakeArm intakeArm, IntakeRoller intakeRoller) {
+        return Commands.parallel(
+            intakeArm.retractCommand(),
+            intakeRoller.stopCommand()
+        ).withName("Behaviors.stowIntake");
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // SHOOT
+    // ─────────────────────────────────────────────────────────────────
+
+    /**
+     * Spins the shooter to the target RPM, then—once up to speed—runs the
+     * feeder and agitator to push the game piece through. Stops everything
+     * on interrupt.
+     *
+     * <p>Binding: {@code operator.rightBumper().whileTrue(RobotBehaviors.shootFixedRPM(..., kShooter.SAFE_RPM));}
+     */
+    public static Command shootFixedRPM(Shooter shooter, Feeder feeder, Agitator agitator, double rpm) {
+        return Commands.sequence(
+            shooter.setRPMCommand(rpm),
+            Commands.waitUntil(shooter::atVelocity),
+            Commands.parallel(
+                feeder.feedCommand(),
+                agitator.toShooterCommand()
+            )
+        ).withName("Behaviors.shootFixedRPM(" + rpm + ")");
     }
 }

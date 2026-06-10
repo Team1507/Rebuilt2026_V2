@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 import org.team1507.lib.core.framework.LoggedRobot;
@@ -37,6 +38,9 @@ public final class Robot extends LoggedRobot {
     public final QuestNavSubsystem questNav;
     public final IntakeArm         intakeArm;
     public final IntakeRoller      intakeRoller;
+    public final Hopper            hopper;
+    public final Agitator          agitator;
+    public final Feeder            feeder;
     public final Shooter           shooter;
 
     // -------------------------------------------------------------------------
@@ -67,9 +71,12 @@ public final class Robot extends LoggedRobot {
             swerve::resetPose,
             kQuest.ROBOT_TO_QUEST
         );
-        intakeArm = new IntakeArm();
+        intakeArm    = new IntakeArm();
         intakeRoller = new IntakeRoller();
-        shooter = new Shooter();
+        hopper       = new Hopper();
+        agitator     = new Agitator();
+        feeder       = new Feeder();
+        shooter      = new Shooter();
 
         // Pre-match pose preset buttons (visible in Elastic while disabled).
         // Place the robot at the known starting position and press the matching
@@ -85,7 +92,7 @@ public final class Robot extends LoggedRobot {
             .publishToDashboard();
 
         // Autonomous chooser
-        AutoBuilder.init(swerve, intakeArm, intakeRoller, shooter);
+        AutoBuilder.init(swerve, intakeArm, intakeRoller, hopper, agitator, feeder, shooter);
         autoChooser.setDefaultOption("Drive Forward", DriveForwardAuto.build());
         SmartDashboard.putData("Auto Mode", autoChooser);
 
@@ -114,23 +121,60 @@ public final class Robot extends LoggedRobot {
         // to zero the gyro. Do this after any hot code deploy without a power cycle.
         topDriver.a().onTrue(swerve.zeroHeadingCommand());
 
-         // ----------------------------
+        // ----------------------------
         // Intake
         // ----------------------------
+
+        // Left trigger: deploy hopper → arm → roller
+        bottomDriver.leftTrigger(0.5)
+            .whileTrue(RobotBehaviors.deployAndIntake(hopper, intakeArm, intakeRoller))
+            .onFalse(RobotBehaviors.stowIntake(intakeArm, intakeRoller));
+
+        // B button: outtake (arm deploy + roller reverse + agitator out)
         bottomDriver.b()
-        .whileTrue(intakeArm.deployCommand())
-        .whileTrue(intakeRoller.runReverseCommand())
-        //.whileTrue(AgitatorCommands.toOutake(agitatorSubsystem))
-        .onFalse(intakeArm.retractCommand())
-        .onFalse(intakeRoller.stopCommand());
-        //.whileFalse(AgitatorCommands.toStop(agitatorSubsystem));
+            .whileTrue(intakeArm.deployCommand())
+            .whileTrue(intakeRoller.runReverseCommand())
+            .whileTrue(agitator.toOuttakeCommand())
+            .onFalse(intakeArm.retractCommand())
+            .onFalse(intakeRoller.stopCommand())
+            .onFalse(agitator.stopCommand());
 
         // ----------------------------
         // Shooter
         // ----------------------------
+
+        // Right bumper: safe shot (spin up + feed on velocity)
+        bottomDriver.rightBumper()
+            .whileTrue(shooter.spinUpCommand(kShooter.SAFE_RPM))
+            .whileTrue(Commands.waitUntil(shooter::atVelocity)
+                .andThen(Commands.parallel(feeder.feedCommand(), agitator.toShooterCommand())))
+            .onFalse(Commands.parallel(shooter.stopCommand(), feeder.stopCommand(), agitator.stopCommand()));
+
+        // Left bumper: lob shot
+        bottomDriver.leftBumper()
+            .whileTrue(shooter.spinUpCommand(kShooter.LOB_RPM))
+            .whileTrue(Commands.waitUntil(shooter::atVelocity)
+                .andThen(Commands.parallel(feeder.feedCommand(), agitator.toShooterCommand())))
+            .onFalse(Commands.parallel(shooter.stopCommand(), feeder.stopCommand(), agitator.stopCommand()));
+
+        // Right trigger (legacy / direct spin-up without feed)
         bottomDriver.rightTrigger(0.5)
             .whileTrue(shooter.spinUpCommand(kShooter.SAFE_RPM))
             .onFalse(shooter.stopCommand());
+
+        // ----------------------------
+        // Agitator manual overrides
+        // ----------------------------
+
+        // POV Up: nudge game piece toward shooter
+        bottomDriver.povUp()
+            .whileTrue(agitator.toShooterCommand())
+            .onFalse(agitator.stopCommand());
+
+        // POV Down: nudge game piece back toward intake
+        bottomDriver.povDown()
+            .whileTrue(agitator.toIntakeCommand())
+            .onFalse(agitator.stopCommand());
     }
 
     private void configureDefaultBindings() {

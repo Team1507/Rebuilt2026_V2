@@ -38,6 +38,9 @@ public final class AutoBuilder {
 
     public static IntakeArm intakeArm;
     public static IntakeRoller intakeRoller;
+    public static Hopper hopper;
+    public static Agitator agitator;
+    public static Feeder feeder;
     public static Shooter shooter;
     // -------------------------------------------------------------------------
     // Initialization
@@ -46,10 +49,20 @@ public final class AutoBuilder {
     // Add new subsystem parameters here as the robot grows each year.
     // -------------------------------------------------------------------------
 
-    public static void init(Swerve swerve, IntakeArm intakeArm, IntakeRoller intakeRoller, Shooter shooter) {
+    public static void init(
+            Swerve swerve,
+            IntakeArm intakeArm,
+            IntakeRoller intakeRoller,
+            Hopper hopper,
+            Agitator agitator,
+            Feeder feeder,
+            Shooter shooter) {
         AutoBuilder.swerve = swerve;
         AutoBuilder.intakeArm = intakeArm;
         AutoBuilder.intakeRoller = intakeRoller;
+        AutoBuilder.hopper = hopper;
+        AutoBuilder.agitator = agitator;
+        AutoBuilder.feeder = feeder;
         AutoBuilder.shooter = shooter;
     }
 

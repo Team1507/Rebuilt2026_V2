@@ -89,12 +89,20 @@ public class Constants {
         public static final int INTAKE_ROLLER = 27;
 
         // Hopper
-        public static final int HOPPER = 16;
+        public static final int HOPPER     = 16;
         public static final int HOPPER_DIO = 8;
 
+        // Agitator
+        public static final int AGITATOR_BLU = 15;
+        public static final int AGITATOR_YEL = 51;
+
+        // Feeder
+        public static final int FEEDER_BLU = 20;
+        public static final int FEEDER_YEL = 18;
+
         // Shooter
-        public static final int SHOOTER_BLU = 19;
-        public static final int SHOOTER_YEL = 17;
+        public static final int SHOOTER_BLU     = 19;
+        public static final int SHOOTER_YEL     = 17;
         public static final int SHOOTER_BLU_DIO = 6;
         public static final int SHOOTER_YEL_DIO = 7;
     }
@@ -122,6 +130,13 @@ public class Constants {
         //         .gearBox(20, 1)
         //         .withScaling(0.0, 46.3, 12.0));
     
+        /**
+         * Motor rotations per degree of hopper mechanism travel.
+         * Derived from hardware calibration: 0 motor rotations = 0 deg,
+         * 46.3 motor rotations = 12 deg (20:1 gearbox, linear scaling).
+         */
+        public static final double DEGREES_TO_MOTOR_ROTATIONS = 46.3 / 12.0;
+
         public static final MotorConfig CONFIG =
             MotorConfig.builder(ControlMode.POSITION)
                 .withPID(0.11, 0.0, 0.02)
@@ -351,6 +366,67 @@ public class Constants {
         }
     }
     
+
+    // ╔═══════════════════════════════════════════════════════════════╗
+    // ║                      AGITATOR CONSTANTS                       ║
+    // ║               (Arcane Material Stirring Engine)               ║
+    // ╚═══════════════════════════════════════════════════════════════╝
+
+    public static final class kAgitator {
+
+        public static final double TORQUE_LOW = 5.0;
+        public static final double TORQUE_HIGH = 15.0;
+        public static final double TORQUE_IDLE = 0.5;
+        public static final double OUTTAKE_TORQUE = -10.0;
+        public static final double AUTO_TORQUE = 10.0;
+
+        public static final MotorConfig BLU_CONFIG =
+            MotorConfig.builder(ControlMode.TORQUE)
+                .withStatorCurrentLimit(Amps.of(20))
+                .withSupplyCurrentLimit(Amps.of(40))
+                .withPeakTorqueCurrent(20.0, -10.0)
+                .withSimVelocityRps(50)
+                .withBrake()
+                .build();
+
+        public static final MotorConfig YEL_CONFIG =
+            MotorConfig.builder(ControlMode.TORQUE)
+                .withStatorCurrentLimit(Amps.of(20))
+                .withSupplyCurrentLimit(Amps.of(40))
+                .withPeakTorqueCurrent(20.0, -10.0)
+                .withSimVelocityRps(50)
+                .withBrake()
+                .build();
+    }
+
+    // ╔═══════════════════════════════════════════════════════════════╗
+    // ║                       FEEDER CONSTANTS                        ║
+    // ║             (Mana‑Driven Material Uplift System)              ║
+    // ╚═══════════════════════════════════════════════════════════════╝
+
+    public static final class kFeeder {
+
+        public static final double FEED_RPM  = 500.0;
+        public static final double VOMIT_RPM = -250.0;
+
+        public static final MotorConfig BLU_CONFIG =
+            MotorConfig.builder(ControlMode.VELOCITY)
+                .inverted(true)
+                .withPID(0.11, 0.0, 0.0)
+                .withFeedforward(0.09931, 0.42, 0.0)
+                .withVoltageLimits(12.0, -12.0)
+                .withStatorCurrentLimit(Amps.of(100))
+                .build();
+
+        public static final MotorConfig YEL_CONFIG =
+            MotorConfig.builder(ControlMode.VELOCITY)
+                .inverted(false)
+                .withPID(0.11, 0.0, 0.02)
+                .withFeedforward(0.09931, 0.42, 0.0)
+                .withVoltageLimits(12.0, -12.0)
+                .withStatorCurrentLimit(Amps.of(100))
+                .build();
+    }
 
     // ============================================================
     // Shooter — dual flywheel (BLU CAN 19, YEL CAN 17), 1:1 gear ratio.
