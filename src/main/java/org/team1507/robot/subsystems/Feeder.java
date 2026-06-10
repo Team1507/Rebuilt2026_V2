@@ -80,6 +80,12 @@ public class Feeder extends Subsystem1507 {
     // =========================================================================
 
     @Override
+    public void simulationPeriodic() {
+        bluMotor.simulationPeriodic(0.02);
+        yelMotor.simulationPeriodic(0.02);
+    }
+
+    @Override
     public void periodic() {
         BaseStatusSignal.refreshAll(feederSignals);
 

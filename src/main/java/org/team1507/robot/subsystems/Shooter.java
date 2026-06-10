@@ -19,6 +19,7 @@ import org.team1507.robot.Constants.kShooter;
 import com.ctre.phoenix6.BaseStatusSignal;
 
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 
 public class Shooter extends Subsystem1507 {
@@ -80,10 +81,12 @@ public class Shooter extends Subsystem1507 {
     }
 
     public boolean isBluBallPresent() {
+        if (RobotBase.isSimulation()) return false;
         return !bluBallSensor.get();
     }
 
     public boolean isYelBallPresent() {
+        if (RobotBase.isSimulation()) return false;
         return !yelBallSensor.get();
     }
 
@@ -96,6 +99,12 @@ public class Shooter extends Subsystem1507 {
     // =========================================================================
     // Periodic
     // =========================================================================
+
+    @Override
+    public void simulationPeriodic() {
+        bluMotor.simulationPeriodic(0.02);
+        yelMotor.simulationPeriodic(0.02);
+    }
 
     @Override
     public void periodic() {

@@ -40,6 +40,12 @@ public class IntakeArm extends Subsystem1507{
     }
 
     @Override
+    public void simulationPeriodic() {
+        BLUmotor.simulationPeriodic(0.02);
+        YELmotor.simulationPeriodic(0.02);
+    }
+
+    @Override
     public void periodic() {
         BaseStatusSignal.refreshAll(armSignals);
 

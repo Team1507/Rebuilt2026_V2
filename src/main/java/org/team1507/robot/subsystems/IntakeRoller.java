@@ -31,6 +31,11 @@ public class IntakeRoller extends Subsystem1507 {
   }
 
   @Override
+  public void simulationPeriodic() {
+      intakeRollerMotor.simulationPeriodic(0.02);
+  }
+
+  @Override
   public void periodic() {
  
     BaseStatusSignal.refreshAll(motorSignals);

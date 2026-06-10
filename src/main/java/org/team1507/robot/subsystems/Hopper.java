@@ -21,6 +21,7 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 
 public class Hopper extends Subsystem1507 {
@@ -73,6 +74,7 @@ public class Hopper extends Subsystem1507 {
 
     /** True when the hopper's reverse Hall-effect sensor is triggered (fully retracted). */
     public boolean isAtReverseLimit() {
+        if (RobotBase.isSimulation()) return false;
         return !halSensor.get();
     }
 
@@ -89,6 +91,11 @@ public class Hopper extends Subsystem1507 {
     // =========================================================================
     // Periodic
     // =========================================================================
+
+    @Override
+    public void simulationPeriodic() {
+        hopperMotor.simulationPeriodic(0.02);
+    }
 
     @Override
     public void periodic() {

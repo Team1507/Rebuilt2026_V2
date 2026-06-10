@@ -419,6 +419,7 @@ public class Constants {
                 .withFeedforward(0.09931, 0.42, 0.0)
                 .withVoltageLimits(12.0, -12.0)
                 .withStatorCurrentLimit(Amps.of(100))
+                .withSimVelocityRps(20)
                 .build();
 
         public static final MotorConfig YEL_CONFIG =
@@ -428,6 +429,7 @@ public class Constants {
                 .withFeedforward(0.09931, 0.42, 0.0)
                 .withVoltageLimits(12.0, -12.0)
                 .withStatorCurrentLimit(Amps.of(100))
+                .withSimVelocityRps(20)
                 .build();
     }
 
