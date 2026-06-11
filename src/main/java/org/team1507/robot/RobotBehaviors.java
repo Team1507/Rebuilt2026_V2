@@ -91,17 +91,25 @@ public final class RobotBehaviors {
     // ─────────────────────────────────────────────────────────────────
 
     /**
-     * Extends the hopper, then—once extended—deploys the intake arm and spins
-     * the intake roller. All three run until interrupted.
+     * Extends the hopper to EXTENDED_POS while simultaneously deploying the intake
+     * arm and roller once the hopper clears its safe threshold.
      *
-     * <p>Binding: {@code operator.leftTrigger(0.5).whileTrue(RobotBehaviors.deployAndIntake(...));}
+     * <p>The hopper and arm/roller move in parallel: the hopper drives to 12" and
+     * holds there; as soon as the hopper passes 10" (SAFE_EXTENDED), the arm deploys
+     * and the roller spins. This saves time vs. waiting for full hopper extension
+     * before starting arm movement. Runs until interrupted (button released).
+     *
+     * <p>Binding: {@code driver.leftTrigger(0.5).whileTrue(RobotBehaviors.deployAndIntake(...));}
      */
     public static Command deployAndIntake(Hopper hopper, IntakeArm intakeArm, IntakeRoller intakeRoller) {
-        return Commands.sequence(
-            hopper.extendCommand(),
-            Commands.parallel(
-                intakeArm.deployCommand(),
-                intakeRoller.runCommand()
+        return Commands.parallel(
+            hopper.holdExtendedCommand(),
+            Commands.sequence(
+                Commands.waitUntil(hopper::isHopperSafeForIntake),
+                Commands.parallel(
+                    intakeArm.deployCommand(),
+                    intakeRoller.runCommand()
+                )
             )
         ).withName("Behaviors.deployAndIntake");
     }

@@ -127,6 +127,18 @@ public class Hopper extends Subsystem1507 {
             .onEnd((interrupted, timedOut, stalled) -> stop());
     }
 
+    /**
+     * Drives the hopper to EXTENDED_POS and holds there indefinitely.
+     * Unlike extendCommand(), this has no isFinished — it runs until interrupted,
+     * keeping the PID active so the motor doesn't release while the intake arm deploys.
+     */
+    public Command holdExtendedCommand() {
+        return new CommandBuilder(this)
+            .named("hopper.holdExtended")
+            .onExecute(() -> setPosition(kHopper.EXTENDED_POS))
+            .onEnd((interrupted, timedOut, stalled) -> stop());
+    }
+
     /** Retracts the hopper to RETRACTED_POS. Runs until interrupted. */
     public Command retractCommand() {
         return new CommandBuilder(this)
