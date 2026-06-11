@@ -52,8 +52,6 @@ public class IntakeArm extends Subsystem1507{
         log("AngleDegrees",   getAverageAngle());
         log("TargetDegrees",  getTargetAngle());
         log("AtTarget",       isAtTarget());
-        log("BLU/StatorAmps", BLUmotor.getStatorCurrent());
-        log("YEL/StatorAmps", YELmotor.getStatorCurrent());
         log("Stalled",        isStalled());
     }
 

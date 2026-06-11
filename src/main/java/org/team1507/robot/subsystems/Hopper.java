@@ -111,7 +111,6 @@ public class Hopper extends Subsystem1507 {
         log("FullyExtended",   isHopperFullyExtended());
         log("SafeForIntake",   isHopperSafeForIntake());
         log("ReverseLimit",    isAtReverseLimit());
-        log("StatorAmps",      hopperMotor.getStatorCurrent());
     }
 
     // =========================================================================
