@@ -71,6 +71,8 @@ public final class Robot extends LoggedRobot {
         intakeArm    = new IntakeArm();
         intakeRoller = new IntakeRoller();
         shooter      = new Shooter();
+
+        // Safe Check for IntakeArm
         intakeArm.setHopperSafeSupplier(hopper::isHopperSafeForIntake);
 
         // Pre-match pose preset buttons (visible in Elastic while disabled).

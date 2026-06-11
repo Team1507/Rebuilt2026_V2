@@ -7,7 +7,23 @@
       "PowerShell(Get-ChildItem \"C:\\\\Users\\\\Public\\\\wpilib\\\\2025\\\\jdk\\\\bin\\\\java.exe\" -ErrorAction SilentlyContinue; Get-ChildItem \"C:\\\\Users\\\\Public\\\\wpilib\\\\2026\\\\jdk\\\\bin\\\\java.exe\" -ErrorAction SilentlyContinue; Get-ChildItem \"$env:USERPROFILE\\\\wpilib\" -ErrorAction SilentlyContinue | Select-Object Name)",
       "PowerShell($env:JAVA_HOME = \"C:\\\\Users\\\\Public\\\\wpilib\\\\2026\\\\jdk\"; cd \"C:\\\\Users\\\\stude\\\\Documents\\\\Programs\\\\Rebuilt2026_V2\"; .\\\\gradlew.bat compileJava 2>&1 | Select-Object -Last 60)",
       "PowerShell($env:JAVA_HOME = \"C:\\\\Users\\\\Public\\\\wpilib\\\\2026\\\\jdk\"; cd \"C:\\\\Users\\\\stude\\\\Documents\\\\Programs\\\\Rebuilt2026_V2\"; .\\\\gradlew.bat compileJava 2>&1 | Select-Object -Last 10)",
-      "PowerShell($extPath = \"$env:USERPROFILE\\\\.vscode\\\\extensions\\\\team1507.subsystem-tools-1.0.0\"; Test-Path $extPath; if \\(Test-Path $extPath\\) { Get-ChildItem $extPath })"
+      "PowerShell($extPath = \"$env:USERPROFILE\\\\.vscode\\\\extensions\\\\team1507.subsystem-tools-1.0.0\"; Test-Path $extPath; if \\(Test-Path $extPath\\) { Get-ChildItem $extPath })",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\KellyTopolski\\\\Documents\\\\1507\\\\Rebuilt2026\" -Recurse -Name)",
+      "Bash(dir /s /b src\\\\main\\\\java)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\KellyTopolski\\\\Documents\\\\1507\\\\1507Base\" -Recurse -Force)",
+      "Bash(Select-Object FullName)",
+      "Bash(Sort-Object FullName)",
+      "Bash(xargs wc -l)",
+      "PowerShell(head -20)",
+      "Bash(xargs grep -l \"DCMotorSim\\\\|ElevatorSim\\\\|SingleJointedArmSim\\\\|FlywheelSim\")",
+      "PowerShell(Head 30)",
+      "WebSearch",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(./gradlew compileJava)",
+      "PowerShell(cd \"C:\\\\Users\\\\KellyTopolski\\\\Documents\\\\1507\\\\Rebuilt2026_V2\"; $env:JAVA_HOME = \"C:\\\\Users\\\\KellyTopolski\\\\wpilib\\\\2026\\\\jdk\"; .\\\\gradlew.bat compileJava 2>&1 | Select-Object -Last 50)",
+      "PowerShell(ls \"C:\\\\Users\\\\KellyTopolski\\\\wpilib\\\\2025\\\\jdk\" | Select-Object -First 5; cd \"C:\\\\Users\\\\KellyTopolski\\\\Documents\\\\1507\\\\Rebuilt2026_V2\"; $env:JAVA_HOME = \"C:\\\\Users\\\\KellyTopolski\\\\wpilib\\\\2025\\\\jdk\"; .\\\\gradlew.bat compileJava 2>&1 | Select-Object -Last 40)",
+      "PowerShell(\\(Get-Command java -ErrorAction SilentlyContinue\\).Source; [System.Environment]::GetEnvironmentVariable\\(\"JAVA_HOME\", \"User\"\\); [System.Environment]::GetEnvironmentVariable\\(\"JAVA_HOME\", \"Machine\"\\))"
     ]
   }
 }
