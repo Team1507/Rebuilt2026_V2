@@ -96,9 +96,9 @@ public final class Robot extends LoggedRobot {
         autoChooser.setDefaultOption("Drive Forward", DriveForwardAuto.build());
         SmartDashboard.putData("Auto Mode", autoChooser);
 
-        // Controllers and bindings
-        topDriver = new CommandXboxController(RobotMap.DRIVER_CONTROLLER);
-        bottomDriver = new CommandXboxController(RobotMap.OPERATOR_CONTROLLER);
+        // Controllers and bindings — bottomDriver = port 0 (driver), topDriver = port 1 (operator)
+        bottomDriver = new CommandXboxController(RobotMap.DRIVER_CONTROLLER);
+        topDriver    = new CommandXboxController(RobotMap.OPERATOR_CONTROLLER);
         configureBindings();
         configureDefaultBindings();
     }
@@ -109,17 +109,17 @@ public final class Robot extends LoggedRobot {
 
     private void configureBindings() {
 
-        // ── Driver — swerve utilities ──────────────────────────────────────
+        // ── bottomDriver (port 0) — driver: swerve + all robot actions ─────
 
-        // Swerve brake — hold Start to lock wheels in X pattern, release to resume driving
-        topDriver.start().whileTrue(swerve.brakeCommand());
+        // Swerve brake — hold Start to lock wheels in X pattern
+        bottomDriver.start().whileTrue(swerve.brakeCommand());
 
         // Failsafe — cancels all running commands (see RobotBehaviors for details)
-        topDriver.back().onTrue(RobotBehaviors.failsafe());
+        bottomDriver.back().onTrue(RobotBehaviors.failsafe());
 
         // Point the robot toward the opposing alliance wall, then press A
         // to zero the gyro. Do this after any hot code deploy without a power cycle.
-        topDriver.a().onTrue(swerve.zeroHeadingCommand());
+        bottomDriver.a().onTrue(swerve.zeroHeadingCommand());
 
         // ----------------------------
         // Intake
@@ -139,41 +139,39 @@ public final class Robot extends LoggedRobot {
         // Shooter
         // ----------------------------
 
-        // Right bumper: safe shot (spin up + feed on velocity)
+        // Right bumper: lob shot (matches old code rightBumper = LOB_RPM)
         bottomDriver.rightBumper()
-            .whileTrue(RobotBehaviors.shootFixedRPM(shooter, feeder, agitator, kShooter.SAFE_RPM));
-
-        // Left bumper: lob shot
-        bottomDriver.leftBumper()
             .whileTrue(RobotBehaviors.shootFixedRPM(shooter, feeder, agitator, kShooter.LOB_RPM));
 
-        // Right trigger (legacy / direct spin-up without feed)
+        // Right trigger: safe shot (replaces old model-based shot)
         bottomDriver.rightTrigger(0.5)
-            .whileTrue(shooter.spinUpCommand(kShooter.SAFE_RPM))
-            .onFalse(shooter.stopCommand());
+            .whileTrue(RobotBehaviors.shootFixedRPM(shooter, feeder, agitator, kShooter.SAFE_RPM));
+
+        // ── topDriver (port 1) — operator: mechanisms ──────────────────────
 
         // ----------------------------
         // Agitator manual overrides
         // ----------------------------
 
         // POV Up: nudge game piece toward shooter
-        bottomDriver.povUp()
+        topDriver.povUp()
             .whileTrue(agitator.toShooterCommand())
             .onFalse(agitator.stopCommand());
 
         // POV Down: nudge game piece back toward intake
-        bottomDriver.povDown()
+        topDriver.povDown()
             .whileTrue(agitator.toIntakeCommand())
             .onFalse(agitator.stopCommand());
     }
 
     private void configureDefaultBindings() {
 
+        // bottomDriver (port 0) drives the robot field-relative
         swerve.setDefaultCommand(
             swerve.driveCommand(() -> {
-                double x   = MathUtil.applyDeadband(-topDriver.getLeftY(),  0.12);
-                double y   = MathUtil.applyDeadband(-topDriver.getLeftX(),  0.12);
-                double rot = MathUtil.applyDeadband(-topDriver.getRightX(), 0.12);
+                double x   = MathUtil.applyDeadband(-bottomDriver.getLeftY(),  0.12);
+                double y   = MathUtil.applyDeadband(-bottomDriver.getLeftX(),  0.12);
+                double rot = MathUtil.applyDeadband(-bottomDriver.getRightX(), 0.12);
 
                 return ChassisSpeeds.fromFieldRelativeSpeeds(
                     x   * kSwerve.MAX_SPEED,
@@ -183,6 +181,10 @@ public final class Robot extends LoggedRobot {
                 );
             })
         );
+
+        // topDriver (port 1) manually adjusts arm and hopper with joystick axes
+        intakeArm.setDefaultCommand(intakeArm.manualJoystickCommand(() -> topDriver.getLeftY()));
+        hopper.setDefaultCommand(hopper.manualPowerCommand(() -> topDriver.getRightY()));
     }
 
     // =========================================================================
