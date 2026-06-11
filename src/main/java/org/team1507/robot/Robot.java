@@ -97,7 +97,7 @@ public final class Robot extends LoggedRobot {
         autoChooser.addOption("Subway 6-inch Left",            AutoSubway6inchLeft.build());
         autoChooser.addOption("Subway Footlong Right",         AutoSubwayFootlongRight.build());
         autoChooser.addOption("Subway 18-inch Right",          AutoSubway18Inch.build());
-        autoChooser.addOption("Subway 18-inch Left (Blue)",    AutoSubway18InchLeftBlue.build());
+        autoChooser.addOption("Subway 18-inch Left",            AutoSubway18InchLeftBlue.build());
         autoChooser.addOption("Double Subway",                 AutoDoubleSubway.build());
         autoChooser.addOption("Subway Around The Hub",         AutoSubwayAroundTheHub.build());
         SmartDashboard.putData("Auto Mode", autoChooser);

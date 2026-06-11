@@ -20,8 +20,10 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 
+import org.team1507.lib.core.util.Alliance;
 import org.team1507.robot.Constants;
 import org.team1507.robot.RobotBehaviors;
+import org.team1507.robot.auto.nodes.FieldFlip;
 
 // Fluent builder for autonomous routines. Chain methods, call build() to get a Command.
 //
@@ -144,7 +146,7 @@ public final class AutoSequence {
      * Always call this as the first step in an auto routine.
      */
     public AutoSequence resetPose(Pose2d pose) {
-        steps.add(AutoBuilder.swerve.resetPoseCommand(pose));
+        steps.add(AutoBuilder.swerve.resetPoseCommand(Alliance.isRed() ? FieldFlip.pose(pose) : pose));
         return this;
     }
 
@@ -156,13 +158,13 @@ public final class AutoSequence {
 
     /** Drives to a field pose and optionally stops on arrival. Speed is set by the preceding modifier (.slow(), .withSpeed(), etc.) or defaults to full speed. */
     public AutoSequence driveToPoint(Pose2d target, boolean stopAtEnd) {
-        steps.add(AutoBuilder.swerve.driveToPoint(target, consumeSpeed(), stopAtEnd));
+        steps.add(AutoBuilder.swerve.driveToPoint(Alliance.isRed() ? FieldFlip.pose(target) : target, consumeSpeed(), stopAtEnd));
         return this;
     }
 
     /** Drives to a field pose and stops on arrival. Convenience alias for driveToPoint(target, true). */
     public AutoSequence driveTo(Pose2d target) {
-        steps.add(AutoBuilder.swerve.driveToPoint(target, consumeSpeed(), true));
+        steps.add(AutoBuilder.swerve.driveToPoint(Alliance.isRed() ? FieldFlip.pose(target) : target, consumeSpeed(), true));
         return this;
     }
 
@@ -174,25 +176,25 @@ public final class AutoSequence {
     public AutoSequence moveThrough(Pose2d waypoint, double passRadius) {
         double angular = consumeAngular();
         double speed   = consumeSpeed();
-        steps.add(AutoBuilder.swerve.moveThroughPose(waypoint, speed, angular, passRadius));
+        steps.add(AutoBuilder.swerve.moveThroughPose(Alliance.isRed() ? FieldFlip.pose(waypoint) : waypoint, speed, angular, passRadius));
         return this;
     }
 
     /** Rotates to face the given field pose. The robot's position does not change. */
     public AutoSequence pointToTarget(Pose2d target) {
-        steps.add(AutoBuilder.swerve.pointToTarget(target));
+        steps.add(AutoBuilder.swerve.pointToTarget(Alliance.isRed() ? FieldFlip.pose(target) : target));
         return this;
     }
 
     /** Rotates to face a target heading in degrees. */
     public AutoSequence changeHeading(double headingDeg) {
-        steps.add(AutoBuilder.swerve.changeHeading(headingDeg));
+        steps.add(AutoBuilder.swerve.changeHeading(Alliance.isRed() ? headingDeg + 180.0 : headingDeg));
         return this;
     }
 
     /** Snaps to the heading stored in the given pose's rotation component. */
     public AutoSequence changeHeading(Pose2d pose) {
-        steps.add(AutoBuilder.swerve.changeHeading(pose));
+        steps.add(AutoBuilder.swerve.changeHeading(Alliance.isRed() ? FieldFlip.pose(pose) : pose));
         return this;
     }
 

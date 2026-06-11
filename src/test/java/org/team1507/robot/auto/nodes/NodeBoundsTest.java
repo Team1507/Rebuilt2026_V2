@@ -8,6 +8,7 @@
 
 package org.team1507.robot.auto.nodes;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -228,6 +229,101 @@ class NodeBoundsTest {
         // ── Legacy.Outpost ──────────────────────────────────────────────────────────────────
         clearanceCheck("Legacy.Outpost.RIGHT_APPROACH_POINT",       Nodes.Legacy.Outpost.RIGHT_APPROACH_POINT);
         clearanceCheck("Legacy.Outpost.RIGHT_APPROACH_POINT_QUEST", Nodes.Legacy.Outpost.RIGHT_APPROACH_POINT_QUEST);
+    }
+
+    // =========================================================================
+    // Test 3 — Red-alliance flip bounds
+    // =========================================================================
+
+    @Test
+    void flippedNodesAreWithinBounds() {
+
+        // ── Robot.Start ─────────────────────────────────────────────────────────────────────
+        check("flip(Robot.Start.RIGHT)",                                  FieldFlip.pose(Nodes.Robot.Start.RIGHT));
+        check("flip(Robot.Start.CENTER)",                                 FieldFlip.pose(Nodes.Robot.Start.CENTER));
+        check("flip(Robot.Start.LEFT)",                                   FieldFlip.pose(Nodes.Robot.Start.LEFT));
+
+        // ── Robot.Score ─────────────────────────────────────────────────────────────────────
+        check("flip(Robot.Score.RIGHT)",                                  FieldFlip.pose(Nodes.Robot.Score.RIGHT));
+        check("flip(Robot.Score.LEFT)",                                   FieldFlip.pose(Nodes.Robot.Score.LEFT));
+
+        // ── Robot.Pickup ────────────────────────────────────────────────────────────────────
+        check("flip(Robot.Pickup.APPROACH_RIGHT)",                        FieldFlip.pose(Nodes.Robot.Pickup.APPROACH_RIGHT));
+        check("flip(Robot.Pickup.STATION_RIGHT)",                         FieldFlip.pose(Nodes.Robot.Pickup.STATION_RIGHT));
+        check("flip(Robot.Pickup.APPROACH_LEFT)",                         FieldFlip.pose(Nodes.Robot.Pickup.APPROACH_LEFT));
+        check("flip(Robot.Pickup.STATION_LEFT)",                          FieldFlip.pose(Nodes.Robot.Pickup.STATION_LEFT));
+
+        // ── Robot.Waypoint ──────────────────────────────────────────────────────────────────
+        check("flip(Robot.Waypoint.MIDFIELD_RIGHT)",                      FieldFlip.pose(Nodes.Robot.Waypoint.MIDFIELD_RIGHT));
+        check("flip(Robot.Waypoint.MIDFIELD_CENTER)",                     FieldFlip.pose(Nodes.Robot.Waypoint.MIDFIELD_CENTER));
+        check("flip(Robot.Waypoint.MIDFIELD_LEFT)",                       FieldFlip.pose(Nodes.Robot.Waypoint.MIDFIELD_LEFT));
+
+        // ── Legacy.Start ────────────────────────────────────────────────────────────────────
+        check("flip(Legacy.Start.RIGHT)",                                 FieldFlip.pose(Nodes.Legacy.Start.RIGHT));
+        check("flip(Legacy.Start.LEFT)",                                  FieldFlip.pose(Nodes.Legacy.Start.LEFT));
+        check("flip(Legacy.Start.SHOOTING_SPOT_RIGHT)",                   FieldFlip.pose(Nodes.Legacy.Start.SHOOTING_SPOT_RIGHT));
+        check("flip(Legacy.Start.SHOOTING_SPOT_LEFT)",                    FieldFlip.pose(Nodes.Legacy.Start.SHOOTING_SPOT_LEFT));
+
+        // ── Legacy.Midfield ─────────────────────────────────────────────────────────────────
+        check("flip(Legacy.Midfield.RIGHT_OVER_BUMP)",                    FieldFlip.pose(Nodes.Legacy.Midfield.RIGHT_OVER_BUMP));
+        check("flip(Legacy.Midfield.RIGHT_OVER_BUMP2)",                   FieldFlip.pose(Nodes.Legacy.Midfield.RIGHT_OVER_BUMP2));
+        check("flip(Legacy.Midfield.LEFT_OVER_BUMP)",                     FieldFlip.pose(Nodes.Legacy.Midfield.LEFT_OVER_BUMP));
+        check("flip(Legacy.Midfield.RIGHT_BEFORE_BUMP)",                  FieldFlip.pose(Nodes.Legacy.Midfield.RIGHT_BEFORE_BUMP));
+        check("flip(Legacy.Midfield.LEFT_BEFORE_BUMP)",                   FieldFlip.pose(Nodes.Legacy.Midfield.LEFT_BEFORE_BUMP));
+        check("flip(Legacy.Midfield.RIGHT_TURN)",                         FieldFlip.pose(Nodes.Legacy.Midfield.RIGHT_TURN));
+        check("flip(Legacy.Midfield.RIGHT_RIGHT_SUBWAY)",                 FieldFlip.pose(Nodes.Legacy.Midfield.RIGHT_RIGHT_SUBWAY));
+        check("flip(Legacy.Midfield.LEFT_RIGHT_SUBWAY)",                  FieldFlip.pose(Nodes.Legacy.Midfield.LEFT_RIGHT_SUBWAY));
+        check("flip(Legacy.Midfield.RIGHT_RUSH_SUBWAY)",                  FieldFlip.pose(Nodes.Legacy.Midfield.RIGHT_RUSH_SUBWAY));
+        check("flip(Legacy.Midfield.LOWER_RIGHT_RIGHT_SUBWAY)",           FieldFlip.pose(Nodes.Legacy.Midfield.LOWER_RIGHT_RIGHT_SUBWAY));
+        check("flip(Legacy.Midfield.RIGHT_LEFT_SUBWAY)",                  FieldFlip.pose(Nodes.Legacy.Midfield.RIGHT_LEFT_SUBWAY));
+        check("flip(Legacy.Midfield.MIDDLE_RIGHT_SUBWAY)",                FieldFlip.pose(Nodes.Legacy.Midfield.MIDDLE_RIGHT_SUBWAY));
+        check("flip(Legacy.Midfield.LEFT_LEFT_SUBWAY)",                   FieldFlip.pose(Nodes.Legacy.Midfield.LEFT_LEFT_SUBWAY));
+        check("flip(Legacy.Midfield.LEFT_FOOTLONG_SUBWAY)",               FieldFlip.pose(Nodes.Legacy.Midfield.LEFT_FOOTLONG_SUBWAY));
+        check("flip(Legacy.Midfield.SUBWAY_AROUND_THE_HUB)",              FieldFlip.pose(Nodes.Legacy.Midfield.SUBWAY_AROUND_THE_HUB));
+
+        // ── Legacy.Hub ──────────────────────────────────────────────────────────────────────
+        check("flip(Legacy.Hub.CENTER)",                                  FieldFlip.pose(Nodes.Legacy.Hub.CENTER));
+
+        // ── Legacy.Outpost ──────────────────────────────────────────────────────────────────
+        check("flip(Legacy.Outpost.RIGHT_APPROACH_POINT)",                FieldFlip.pose(Nodes.Legacy.Outpost.RIGHT_APPROACH_POINT));
+        check("flip(Legacy.Outpost.RIGHT_APPROACH_POINT_QUEST)",          FieldFlip.pose(Nodes.Legacy.Outpost.RIGHT_APPROACH_POINT_QUEST));
+    }
+
+    // =========================================================================
+    // Test 4 — Flip round-trip (math sanity)
+    // =========================================================================
+
+    @Test
+    void nodeFlipRoundTrip() {
+        // Flipping any pose twice must return the original within floating-point tolerance.
+        // Catches sign errors or missing axes in FieldFlip's math.
+        final double EPSILON = 1e-9;
+
+        Pose2d[] nodes = {
+            Nodes.Robot.Start.RIGHT,    Nodes.Robot.Start.CENTER,    Nodes.Robot.Start.LEFT,
+            Nodes.Robot.Score.RIGHT,    Nodes.Robot.Score.LEFT,
+            Nodes.Robot.Pickup.APPROACH_RIGHT, Nodes.Robot.Pickup.STATION_RIGHT,
+            Nodes.Robot.Pickup.APPROACH_LEFT,  Nodes.Robot.Pickup.STATION_LEFT,
+            Nodes.Robot.Waypoint.MIDFIELD_RIGHT, Nodes.Robot.Waypoint.MIDFIELD_CENTER, Nodes.Robot.Waypoint.MIDFIELD_LEFT,
+            Nodes.Legacy.Start.RIGHT,   Nodes.Legacy.Start.LEFT,
+            Nodes.Legacy.Hub.CENTER,
+            Nodes.Legacy.Outpost.RIGHT_APPROACH_POINT, Nodes.Legacy.Outpost.RIGHT_APPROACH_POINT_QUEST,
+        };
+
+        for (Pose2d original : nodes) {
+            Pose2d roundTripped = FieldFlip.pose(FieldFlip.pose(original));
+            assertEquals(original.getX(), roundTripped.getX(), EPSILON,
+                "Round-trip flip changed X for pose " + original);
+            assertEquals(original.getY(), roundTripped.getY(), EPSILON,
+                "Round-trip flip changed Y for pose " + original);
+            // Compare cos/sin directly — getDegrees() can return un-normalized values
+            // (e.g. 305° instead of -55°) when created from Node.at(), but Rotation2d's
+            // internal cos/sin are always canonical and survive the round-trip exactly.
+            assertEquals(original.getRotation().getCos(), roundTripped.getRotation().getCos(), EPSILON,
+                "Round-trip flip changed heading (cos) for pose " + original);
+            assertEquals(original.getRotation().getSin(), roundTripped.getRotation().getSin(), EPSILON,
+                "Round-trip flip changed heading (sin) for pose " + original);
+        }
     }
 
     /**
