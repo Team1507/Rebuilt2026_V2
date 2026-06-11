@@ -154,4 +154,61 @@ public final class Nodes {
         // Add one class per field structure after game reveal:
         //   public static final class Trench { ... }
     }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Legacy — navigation poses copied verbatim from Rebuilt2026 (old code).
+    //
+    // These have NOT been validated against the V2 field model or the V2
+    // Robot.* node map. Use them only as a reference when porting old auto
+    // routines. Once a node is confirmed correct, move it into Robot.* and
+    // delete the Legacy entry.
+    //
+    // Note: Robot.Start.LEFT in V2 is (3.5, 5.7, 305°) — old code used
+    // (3.5, 5.6, 315°). Confirm against the actual starting box before running.
+    // ─────────────────────────────────────────────────────────────────────
+    public static final class Legacy {
+
+        public static final class Start {
+            public static final Pose2d RIGHT               = Node.at(3.5,  2.5,  55.0);
+            public static final Pose2d LEFT                = Node.at(3.5,  5.6, 315.0);
+            public static final Pose2d SHOOTING_SPOT_RIGHT = Node.at(3.3,  2.8,  49.52);
+            public static final Pose2d SHOOTING_SPOT_LEFT  = Node.at(3.4,  5.3, 320.3);
+        }
+
+        public static final class Midfield {
+            // Bump crossing — safe headings to pass over the 6.5" alliance/neutral-zone ramps
+            public static final Pose2d RIGHT_OVER_BUMP          = Node.at(6.30, 2.30,  55.0);
+            public static final Pose2d RIGHT_OVER_BUMP2         = Node.at(6.30, 2.30, 170.0); // DoubleSubway cycle-2 return heading
+            public static final Pose2d LEFT_OVER_BUMP           = Node.at(6.30, 5.60, 315.0);
+            public static final Pose2d RIGHT_BEFORE_BUMP        = Node.at(5.85, 2.30, 315.0);
+            public static final Pose2d LEFT_BEFORE_BUMP         = Node.at(7.50, 5.60, 315.0);
+            public static final Pose2d RIGHT_TURN               = Node.at(3.50, 2.50, 140.0);
+
+            // Right-side Neutral Zone ("subway") pickup nodes
+            public static final Pose2d RIGHT_RIGHT_SUBWAY       = Node.at(7.40, 1.30,  90.0); // right entry
+            public static final Pose2d LEFT_RIGHT_SUBWAY        = Node.at(7.55, 3.00,  90.0); // 6-inch exit
+            public static final Pose2d RIGHT_RUSH_SUBWAY        = Node.at(6.75, 1.30,  90.0); // fast entry (18-inch)
+            public static final Pose2d LOWER_RIGHT_RIGHT_SUBWAY = Node.at(7.00, 0.85,  90.0); // deep right (DoubleSubway cycle 2)
+            public static final Pose2d RIGHT_LEFT_SUBWAY        = Node.at(7.95, 2.50, 270.0); // right-side exit of left sweep
+            public static final Pose2d MIDDLE_RIGHT_SUBWAY      = Node.at(7.00, 4.00,  90.0); // center sweep (DoubleSubway cycle 2)
+
+            // Left-side Neutral Zone ("subway") pickup nodes
+            public static final Pose2d LEFT_LEFT_SUBWAY         = Node.at(7.40, 7.00, 270.0); // left entry
+            public static final Pose2d LEFT_FOOTLONG_SUBWAY     = Node.at(7.95, 7.20, 270.0); // full-width endpoint
+
+            // Cross-field waypoint used in AroundTheHub transit
+            public static final Pose2d SUBWAY_AROUND_THE_HUB   = Node.at(2.00, 5.00, 270.0);
+        }
+
+        // Hub center — used as a rotation target for pointing the robot toward the scoring hub
+        public static final class Hub {
+            public static final Pose2d CENTER = Node.at(4.8, 4.03, 0.0);
+        }
+
+        // Human player station — right side
+        public static final class Outpost {
+            public static final Pose2d RIGHT_APPROACH_POINT       = Node.at(0.70, 1.10, 180.0);
+            public static final Pose2d RIGHT_APPROACH_POINT_QUEST = Node.at(1.10, 1.10, 180.0); // QuestNav-tuned variant
+        }
+    }
 }
