@@ -20,37 +20,63 @@ import org.team1507.robot.Constants.kSwerve;
 // ─────────────────────────────────────────────────────────────────────────────
 // NodeBoundsTest
 //
-// Two build-time validations that run as part of `./gradlew build`:
+// Build-time guard — runs automatically as part of `./gradlew build`.
+// Both tests below must pass before the build produces a deployable binary,
+// so out-of-bounds or colliding coordinates are caught before the robot ever
+// moves.
 //
-//   allNodesWithinBounds      — every node is inside the active field boundary
-//   noRobotNodeCollidesWithObstacles — no robot node places the robot inside
-//                                      a field structure
+// ── WHAT IS TESTED ──────────────────────────────────────────────────────────
 //
-// Both tests must pass before the build produces a deployable binary.
+//   allNodesWithinBounds
+//     Every Robot node (Pose2d) must lie within the active field boundary.
+//     Location nodes (Translation2d, used for field reference / obstacle math)
+//     are NOT checked — the robot never drives to those.
 //
-// FIELD BOUNDARY (allNodesWithinBounds):
+//   noRobotNodeCollidesWithObstacles
+//     No Robot node may place the robot's spin circle inside or touching a
+//     field structure. Each obstacle is defined by a CORNERS[] polygon in
+//     Nodes.FieldElements.
+//
+// ── WHICH NODES ARE CHECKED ─────────────────────────────────────────────────
+//
+//   Robot.*   — validated in-season nodes used in active auto routines.
+//   Legacy.*  — nodes copied verbatim from Rebuilt2026 (the previous season's
+//               code). These have NOT been confirmed against the V2 field model.
+//               Testing them catches coordinates that are grossly wrong (off-field,
+//               inside an obstacle) before an old routine is accidentally run.
+//               When you confirm a Legacy node is correct and move it into
+//               Robot.*, delete the Legacy entry and its test call here.
+//
+//   Location nodes (Nodes.Field.*, Nodes.FieldElements.*) are intentionally
+//   excluded — they describe field geometry, not robot destinations.
+//
+// ── FIELD BOUNDARY ──────────────────────────────────────────────────────────
+//
 //   Set Nodes.Field.PRACTICE_MODE = true when building at the field room.
-//   The test validates against PRACTICE_LENGTH / PRACTICE_WIDTH instead.
-//   Set it back to false before a competition build.
+//   The test then validates against PRACTICE_LENGTH / PRACTICE_WIDTH instead
+//   of competition dimensions. Set it back to false before a competition build.
 //
-// COLLISION DETECTION (noRobotNodeCollidesWithObstacles):
+// ── COLLISION DETECTION ─────────────────────────────────────────────────────
+//
 //   Each robot node is modeled as a circle:
 //     center = node XY position
 //     radius = robot half-diagonal (center-to-module corner) + BUMPER_BUFFER
-//   Each field element is modeled as a polygon defined by its CORNERS[] array.
-//   Collision = the robot's circle overlaps the polygon, which is true when:
+//   Each field element is a convex polygon defined by its CORNERS[] array.
+//   Collision is true when:
 //     (a) the node center is inside the polygon, OR
-//     (b) the distance from the node center to any polygon edge < robot radius.
+//     (b) the circle's edge reaches any polygon edge (distance < radius).
 //
-//   The CORNERS[] array on each FieldElements class drives the check automatically.
-//   Works for any convex polygon — square, octagon, etc. No bounding box needed.
+//   Works for any polygon shape. To add a new obstacle each season, add one
+//   obstacle() call inside clearanceCheck() for the new FieldElements class.
 //
-//   To add a new obstacle each season, add one obstacle() call inside
-//   clearanceCheck() for the new FieldElements class.
+// ── ADDING NEW NODES ────────────────────────────────────────────────────────
 //
-// ADDING NEW NODES:
-//   Add a matching check() and clearanceCheck() call for each new constant.
+//   For each new Robot.* constant: add one check() call in allNodesWithinBounds()
+//   and one clearanceCheck() call in noRobotNodeCollidesWithObstacles().
 //   Use the full Nodes path as the name string — it appears in failure messages.
+//
+//   For each new Legacy.* constant: same pattern, grouped under the Legacy.*
+//   section in each test.
 // ─────────────────────────────────────────────────────────────────────────────
 class NodeBoundsTest {
 
@@ -114,8 +140,36 @@ class NodeBoundsTest {
         check("Robot.Waypoint.MIDFIELD_CENTER", Nodes.Robot.Waypoint.MIDFIELD_CENTER);
         check("Robot.Waypoint.MIDFIELD_LEFT",   Nodes.Robot.Waypoint.MIDFIELD_LEFT);
 
-        // ── FieldElements ─────────────────────────────────────────────────
-        // Add checks here when FieldElements is populated after game reveal.
+        // ── Legacy.Start ──────────────────────────────────────────────────
+        // Copied from Rebuilt2026 — not yet confirmed against V2 field model.
+        check("Legacy.Start.RIGHT",               Nodes.Legacy.Start.RIGHT);
+        check("Legacy.Start.LEFT",                Nodes.Legacy.Start.LEFT);
+        check("Legacy.Start.SHOOTING_SPOT_RIGHT", Nodes.Legacy.Start.SHOOTING_SPOT_RIGHT);
+        check("Legacy.Start.SHOOTING_SPOT_LEFT",  Nodes.Legacy.Start.SHOOTING_SPOT_LEFT);
+
+        // ── Legacy.Midfield ───────────────────────────────────────────────
+        check("Legacy.Midfield.RIGHT_OVER_BUMP",          Nodes.Legacy.Midfield.RIGHT_OVER_BUMP);
+        check("Legacy.Midfield.RIGHT_OVER_BUMP2",         Nodes.Legacy.Midfield.RIGHT_OVER_BUMP2);
+        check("Legacy.Midfield.LEFT_OVER_BUMP",           Nodes.Legacy.Midfield.LEFT_OVER_BUMP);
+        check("Legacy.Midfield.RIGHT_BEFORE_BUMP",        Nodes.Legacy.Midfield.RIGHT_BEFORE_BUMP);
+        check("Legacy.Midfield.LEFT_BEFORE_BUMP",         Nodes.Legacy.Midfield.LEFT_BEFORE_BUMP);
+        check("Legacy.Midfield.RIGHT_TURN",               Nodes.Legacy.Midfield.RIGHT_TURN);
+        check("Legacy.Midfield.RIGHT_RIGHT_SUBWAY",       Nodes.Legacy.Midfield.RIGHT_RIGHT_SUBWAY);
+        check("Legacy.Midfield.LEFT_RIGHT_SUBWAY",        Nodes.Legacy.Midfield.LEFT_RIGHT_SUBWAY);
+        check("Legacy.Midfield.RIGHT_RUSH_SUBWAY",        Nodes.Legacy.Midfield.RIGHT_RUSH_SUBWAY);
+        check("Legacy.Midfield.LOWER_RIGHT_RIGHT_SUBWAY", Nodes.Legacy.Midfield.LOWER_RIGHT_RIGHT_SUBWAY);
+        check("Legacy.Midfield.RIGHT_LEFT_SUBWAY",        Nodes.Legacy.Midfield.RIGHT_LEFT_SUBWAY);
+        check("Legacy.Midfield.MIDDLE_RIGHT_SUBWAY",      Nodes.Legacy.Midfield.MIDDLE_RIGHT_SUBWAY);
+        check("Legacy.Midfield.LEFT_LEFT_SUBWAY",         Nodes.Legacy.Midfield.LEFT_LEFT_SUBWAY);
+        check("Legacy.Midfield.LEFT_FOOTLONG_SUBWAY",     Nodes.Legacy.Midfield.LEFT_FOOTLONG_SUBWAY);
+        check("Legacy.Midfield.SUBWAY_AROUND_THE_HUB",   Nodes.Legacy.Midfield.SUBWAY_AROUND_THE_HUB);
+
+        // ── Legacy.Hub ────────────────────────────────────────────────────
+        check("Legacy.Hub.CENTER", Nodes.Legacy.Hub.CENTER);
+
+        // ── Legacy.Outpost ────────────────────────────────────────────────
+        check("Legacy.Outpost.RIGHT_APPROACH_POINT",       Nodes.Legacy.Outpost.RIGHT_APPROACH_POINT);
+        check("Legacy.Outpost.RIGHT_APPROACH_POINT_QUEST", Nodes.Legacy.Outpost.RIGHT_APPROACH_POINT_QUEST);
     }
 
 
@@ -145,6 +199,37 @@ class NodeBoundsTest {
         clearanceCheck("Robot.Waypoint.MIDFIELD_RIGHT",  Nodes.Robot.Waypoint.MIDFIELD_RIGHT);
         clearanceCheck("Robot.Waypoint.MIDFIELD_CENTER", Nodes.Robot.Waypoint.MIDFIELD_CENTER);
         clearanceCheck("Robot.Waypoint.MIDFIELD_LEFT",   Nodes.Robot.Waypoint.MIDFIELD_LEFT);
+
+        // ── Legacy.Start ──────────────────────────────────────────────────
+        // Copied from Rebuilt2026 — not yet confirmed against V2 field model.
+        clearanceCheck("Legacy.Start.RIGHT",               Nodes.Legacy.Start.RIGHT);
+        clearanceCheck("Legacy.Start.LEFT",                Nodes.Legacy.Start.LEFT);
+        clearanceCheck("Legacy.Start.SHOOTING_SPOT_RIGHT", Nodes.Legacy.Start.SHOOTING_SPOT_RIGHT);
+        clearanceCheck("Legacy.Start.SHOOTING_SPOT_LEFT",  Nodes.Legacy.Start.SHOOTING_SPOT_LEFT);
+
+        // ── Legacy.Midfield ───────────────────────────────────────────────
+        clearanceCheck("Legacy.Midfield.RIGHT_OVER_BUMP",          Nodes.Legacy.Midfield.RIGHT_OVER_BUMP);
+        clearanceCheck("Legacy.Midfield.RIGHT_OVER_BUMP2",         Nodes.Legacy.Midfield.RIGHT_OVER_BUMP2);
+        clearanceCheck("Legacy.Midfield.LEFT_OVER_BUMP",           Nodes.Legacy.Midfield.LEFT_OVER_BUMP);
+        clearanceCheck("Legacy.Midfield.RIGHT_BEFORE_BUMP",        Nodes.Legacy.Midfield.RIGHT_BEFORE_BUMP);
+        clearanceCheck("Legacy.Midfield.LEFT_BEFORE_BUMP",         Nodes.Legacy.Midfield.LEFT_BEFORE_BUMP);
+        clearanceCheck("Legacy.Midfield.RIGHT_TURN",               Nodes.Legacy.Midfield.RIGHT_TURN);
+        clearanceCheck("Legacy.Midfield.RIGHT_RIGHT_SUBWAY",       Nodes.Legacy.Midfield.RIGHT_RIGHT_SUBWAY);
+        clearanceCheck("Legacy.Midfield.LEFT_RIGHT_SUBWAY",        Nodes.Legacy.Midfield.LEFT_RIGHT_SUBWAY);
+        clearanceCheck("Legacy.Midfield.RIGHT_RUSH_SUBWAY",        Nodes.Legacy.Midfield.RIGHT_RUSH_SUBWAY);
+        clearanceCheck("Legacy.Midfield.LOWER_RIGHT_RIGHT_SUBWAY", Nodes.Legacy.Midfield.LOWER_RIGHT_RIGHT_SUBWAY);
+        clearanceCheck("Legacy.Midfield.RIGHT_LEFT_SUBWAY",        Nodes.Legacy.Midfield.RIGHT_LEFT_SUBWAY);
+        clearanceCheck("Legacy.Midfield.MIDDLE_RIGHT_SUBWAY",      Nodes.Legacy.Midfield.MIDDLE_RIGHT_SUBWAY);
+        clearanceCheck("Legacy.Midfield.LEFT_LEFT_SUBWAY",         Nodes.Legacy.Midfield.LEFT_LEFT_SUBWAY);
+        clearanceCheck("Legacy.Midfield.LEFT_FOOTLONG_SUBWAY",     Nodes.Legacy.Midfield.LEFT_FOOTLONG_SUBWAY);
+        clearanceCheck("Legacy.Midfield.SUBWAY_AROUND_THE_HUB",   Nodes.Legacy.Midfield.SUBWAY_AROUND_THE_HUB);
+
+        // ── Legacy.Hub ────────────────────────────────────────────────────
+        clearanceCheck("Legacy.Hub.CENTER", Nodes.Legacy.Hub.CENTER);
+
+        // ── Legacy.Outpost ────────────────────────────────────────────────
+        clearanceCheck("Legacy.Outpost.RIGHT_APPROACH_POINT",       Nodes.Legacy.Outpost.RIGHT_APPROACH_POINT);
+        clearanceCheck("Legacy.Outpost.RIGHT_APPROACH_POINT_QUEST", Nodes.Legacy.Outpost.RIGHT_APPROACH_POINT_QUEST);
     }
 
     /**
