@@ -134,26 +134,32 @@ public final class CtreMotorSignals {
     // ACCESSORS (motor-native units)
     // ============================================================
 
+    /** Returns the rotor position in rotations from the last signal refresh. */
     public double getRotorPosition() {
         return rotorPosition.getValueAsDouble();
     }
 
+    /** Returns the rotor velocity in rotations per second from the last signal refresh. */
     public double getRotorVelocity() {
         return rotorVelocity.getValueAsDouble();
     }
 
+    /** Returns the supply (battery-side) current in amps from the last signal refresh. */
     public double getSupplyCurrent() {
         return supplyCurrent.getValueAsDouble();
     }
 
+    /** Returns the stator (output-side) current in amps from the last signal refresh. */
     public double getStatorCurrent() {
         return statorCurrent.getValueAsDouble();
     }
 
+    /** Returns the motor output voltage in volts from the last signal refresh. */
     public double getMotorVoltage() {
         return motorVoltage.getValueAsDouble();
     }
 
+    /** Returns the controller device temperature in degrees Celsius from the last signal refresh. */
     public double getDeviceTemp() {
         return deviceTemp.getValueAsDouble();
     }

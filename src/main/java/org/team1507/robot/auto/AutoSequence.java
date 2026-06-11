@@ -23,56 +23,15 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import org.team1507.robot.Constants;
 import org.team1507.robot.RobotBehaviors;
 
-// ─────────────────────────────────────────────────────────────────────────────
-// AutoSequence
+// Fluent builder for autonomous routines. Chain methods, call build() to get a Command.
 //
-// Fluent builder for constructing autonomous routines. Each method appends a
-// Command to an internal list, and build() assembles them into a single
-// sequential Command that runs step by step.
+// Basic usage:
+//   new AutoSequence().startTimer().resetPose(start).driveToPoint(target, true).build();
 //
-// BASIC USAGE:
-//   new AutoSequence()
-//       .startTimer()
-//       .resetPose(Nodes.Robot.Start.RIGHT)
-//       .driveToPoint(Nodes.Robot.Score.RIGHT, true)
-//       .stop()
-//       .build();
+// Speed modifiers (.slow(), .creep(), .withSpeed()) apply to the next motion step only.
 //
-// SPEED MODIFIERS:
-//   Speed modifiers must appear immediately before a motion command.
-//   They apply to that one step only and then reset automatically.
-//
-//   .slow().driveToPoint(Nodes.Robot.Pickup.APPROACH_RIGHT, true)
-//   .creep().driveToPoint(Nodes.Robot.Pickup.STATION_RIGHT, true)
-//
-// GROUPS (parallel / race / deadline):
-//   Each branch inside a group is its own mini-sequence, written as a lambda:
-//       seq -> seq.step1().step2()
-//
-//   The "seq" is a fresh AutoSequence for that branch. You can chain as many
-//   steps as needed inside one branch.
-//   Speed modifiers work normally inside branches — they only affect the step
-//   immediately after them inside that branch.
-//
-//   Examples:
-//     .parallel(
-//         seq -> seq.mySubsystemCommand(),
-//         seq -> seq.driveForwardMeters(1.0, true)
-//     )
-//     .race(
-//         seq -> seq.driveToPoint(Nodes.Robot.Score.RIGHT, true),
-//         seq -> seq.waitSeconds(2.0)
-//     )
-//     .deadline(
-//         seq -> seq.driveToPoint(Nodes.Robot.Pickup.APPROACH_RIGHT, true),  // deadline
-//         seq -> seq.mySubsystemCommand()                                     // runs alongside
-//     )
-//
-// HOW TO ADD NEW AUTO STEPS:
-//   1. Add your command to AutoBuilder.java (or RobotBehaviors.java if multi-subsystem).
-//   2. Add a one-line wrapper method here following the pattern of existing methods.
-//   3. Use it in your routine file.
-// ─────────────────────────────────────────────────────────────────────────────
+// Groups (parallel / race / deadline) take lambdas:  seq -> seq.step1().step2()
+// Each branch shares the root autoTimer so shootUntil()/waitUntilTime() work correctly.
 public final class AutoSequence {
 
     // -------------------------------------------------------------------------

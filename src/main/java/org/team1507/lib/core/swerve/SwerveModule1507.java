@@ -25,8 +25,37 @@ import edu.wpi.first.wpilibj.RobotBase;
 import org.team1507.lib.core.impl.ctre.Motor1507;
 import org.team1507.lib.core.logging.Telemetry;
 
+/**
+ * One physical swerve module — a paired drive motor, steer motor, and absolute CANcoder.
+ *
+ * <p>Wraps all per-module math behind three public APIs:
+ * <ul>
+ *   <li>{@link #setDesiredState} — apply a {@link SwerveModuleState} each loop</li>
+ *   <li>{@link #getState} / {@link #getPosition} — read measured speed and distance</li>
+ *   <li>{@link #getAllSignals} — return all 14 CAN signals for batched refresh in
+ *       {@code Swerve.periodic()}</li>
+ * </ul>
+ *
+ * <p>Drive velocity and position are corrected for mechanical coupling: in SDS-style modules,
+ * rotating the steer gear physically turns the drive gear by a small amount
+ * ({@link MathConfig#couplingRatio}). Without correction this introduces odometry error
+ * whenever the steer angle changes rapidly (e.g., snap-turns in path following).
+ *
+ * <p>Simulation is supported: {@link #simulationUpdate} ticks the CANcoder sim state and
+ * integrates drive position. All observation methods return sim values when
+ * {@link edu.wpi.first.wpilibj.RobotBase#isSimulation()} is true.
+ */
 public final class SwerveModule1507 {
 
+    /**
+     * Immutable gear-ratio and wheel-size parameters for a single swerve module.
+     *
+     * @param driveGearRatio    motor rotations per wheel rotation (drive stage)
+     * @param steerGearRatio    motor rotations per full module azimuth rotation (steer stage)
+     * @param couplingRatio     drive motor rotations induced per steer motor rotation due to
+     *                          mechanical coupling in the module (typically ~3.57 for SDS L2/L3)
+     * @param wheelRadiusMeters wheel radius in meters; used to convert rotations to distance
+     */
     public record MathConfig(
         double driveGearRatio,
         double steerGearRatio,
@@ -60,6 +89,19 @@ public final class SwerveModule1507 {
 
     private final BaseStatusSignal[] allSignals;
 
+    /**
+     * Constructs a {@code SwerveModule1507} and wires all CAN devices.
+     *
+     * @param name            telemetry prefix for this module (e.g., {@code "FL"}, {@code "BR"})
+     * @param drive           drive motor configured for velocity control
+     * @param steer           steer motor configured for position control
+     * @param encoder         absolute CANcoder measuring the steer azimuth angle
+     * @param encoderOffset   offset subtracted from the raw CANcoder reading to zero the
+     *                        wheel in the robot-forward direction
+     * @param math            gear ratio and wheel size parameters — see {@link MathConfig}
+     * @param driveMetersScale scalar applied to computed drive distance and velocity;
+     *                        use {@code 1.0} unless per-module wheel-wear compensation is needed
+     */
     public SwerveModule1507(
         String name,
         Motor1507 drive,
@@ -212,6 +254,7 @@ public final class SwerveModule1507 {
         return Rotation2d.fromRotations(rotations).minus(encoderOffset);
     }
 
+    /** Raw CANcoder position in rotations (encoder offset not applied), or sim equivalent. */
     private double azimuthRotationsRaw() {
         if (RobotBase.isSimulation()) {
             return simSteerAngleRotations + encoderOffset.getRotations();
@@ -219,6 +262,7 @@ public final class SwerveModule1507 {
         return absPosition.getValue().in(Rotations);
     }
 
+    /** Raw CANcoder velocity in rotations per second, or {@code 0.0} in sim. */
     private double azimuthRpsRaw() {
         return RobotBase.isSimulation() ? 0.0
             : azimuthVelocity.getValue().in(RotationsPerSecond);
@@ -284,32 +328,48 @@ public final class SwerveModule1507 {
     // Core math
     // ============================================================
 
+    /**
+     * Raw drive rotor position minus the coupling contribution from the current steer angle.
+     * Removes odometry error that accumulates when the steer gear turns the drive gear.
+     */
     private double correctedDriveMotorRotations() {
         return drive.getRotorPosition()
             - (azimuthRotationsRaw() * math.couplingRatio());
     }
 
+    /**
+     * Raw drive rotor velocity minus the coupling contribution from the current steer velocity.
+     * Removes speed measurement error during rapid steer changes.
+     */
     private double correctedDriveMotorRps() {
         return drive.getRotorVelocity()
             - (azimuthRpsRaw() * math.couplingRatio());
     }
 
+    /** Coupling-corrected drive motor rotations divided by the drive gear ratio → wheel rotations. */
     private double correctedWheelRotations() {
         return correctedDriveMotorRotations() / math.driveGearRatio();
     }
 
+    /** Coupling-corrected drive motor RPS divided by the drive gear ratio → wheel RPS. */
     private double correctedWheelRps() {
         return correctedDriveMotorRps() / math.driveGearRatio();
     }
 
+    /** Converts wheel rotations to meters via wheel circumference. */
     private double wheelRotationsToMeters(double wheelRotations) {
         return wheelRotations * math.wheelCircumferenceMeters();
     }
 
+    /** Converts wheel RPS to meters per second via wheel circumference. */
     private double wheelRpsToMetersPerSecond(double wheelRps) {
         return wheelRps * math.wheelCircumferenceMeters();
     }
 
+    /**
+     * Converts a target linear speed in m/s to the required drive motor RPS,
+     * adding the coupling feedforward so the drive motor compensates for steer-induced rotation.
+     */
     private double metersPerSecondToDriveMotorRps(double mps) {
         double wheelRps = mps / math.wheelCircumferenceMeters();
         return (wheelRps * math.driveGearRatio())

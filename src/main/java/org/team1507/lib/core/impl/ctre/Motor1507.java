@@ -269,6 +269,7 @@ public final class Motor1507 {
     // OBSERVATION
     // ============================================================
 
+    /** Returns the motor rotor position in rotations. Integrates simulated velocity in sim. */
     public double getRotorPosition() {
         if (RobotBase.isSimulation()) {
             double now = Timer.getFPGATimestamp();
@@ -295,6 +296,7 @@ public final class Motor1507 {
         return signals.getRotorPosition();
     }
 
+    /** Returns the motor rotor velocity in rotations per second. */
     public double getRotorVelocity() {
         if (RobotBase.isSimulation()) {
             return simRotorVelocity;
