@@ -74,6 +74,7 @@ public final class Robot extends LoggedRobot {
         intakeArm    = new IntakeArm();
         intakeRoller = new IntakeRoller();
         hopper       = new Hopper();
+        intakeArm.setHopperSafeSupplier(hopper::isHopperSafeForIntake);
         agitator     = new Agitator();
         feeder       = new Feeder();
         shooter      = new Shooter();

@@ -14,6 +14,7 @@ import org.team1507.lib.core.util.CommandBuilder;
 import org.team1507.robot.Constants.RobotMap;
 import static org.team1507.robot.Constants.kIntake.kArm.*;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix6.BaseStatusSignal;
@@ -21,12 +22,18 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 
-public class IntakeArm extends Subsystem1507{
+public class IntakeArm extends Subsystem1507 {
+
     private final Motor1507 BLUmotor;
     private final Motor1507 YELmotor;
     private final BaseStatusSignal[] armSignals;
 
     private double targetAngleDeg = 0.0;
+
+    // Defaults to always-safe so the arm works standalone (e.g. in unit tests or
+    // before Robot.java wires in the real hopper check).
+    private BooleanSupplier hopperSafeSupplier = () -> true;
+
     public IntakeArm() {
         super ("IntakeArm");
         BLUmotor = new Motor1507(key("BLU"), Motor1507.Type.FXS, RobotMap.INTAKE_ARM_BLUE,  BLU_CONFIG);
@@ -45,18 +52,32 @@ public class IntakeArm extends Subsystem1507{
         YELmotor.simulationPeriodic(0.02);
     }
 
+    /** Called from Robot.java after both subsystems are constructed. */
+    public void setHopperSafeSupplier(BooleanSupplier supplier) {
+        this.hopperSafeSupplier = supplier;
+    }
+
     @Override
     public void periodic() {
         BaseStatusSignal.refreshAll(armSignals);
 
-        log("AngleDegrees",   getAverageAngle());
-        log("TargetDegrees",  getTargetAngle());
-        log("AtTarget",       isAtTarget());
-        log("Stalled",        isStalled());
+        log("AngleDegrees",    getAverageAngle());
+        log("TargetDegrees",   getTargetAngle());
+        log("AtTarget",        isAtTarget());
+        log("Stalled",         isStalled());
+        log("HopperBlocking",  isBlockedByHopper());
     }
 
     public void setAngle(double angleDeg) {
-        this.targetAngleDeg = clampAngle(angleDeg);
+        double clampedAngle = clampAngle(angleDeg);
+
+        // Deploying past the retracted position requires the hopper to be extended
+        // to a safe height. If it isn't, hold the current position.
+        if (clampedAngle > RETRACTED_ANGLE_DEGREES && !hopperSafeSupplier.getAsBoolean()) {
+            return;
+        }
+
+        this.targetAngleDeg = clampedAngle;
         double rotations = degToRotations(this.targetAngleDeg);
 
         BLUmotor.setPositionVoltage(rotations, 0.0);
@@ -83,7 +104,11 @@ public class IntakeArm extends Subsystem1507{
             return;
         }
 
-        if(duty > 0.5) {
+        if (duty > 0.5) {
+            if (getAverageAngle() >= RETRACTED_ANGLE_DEGREES && !hopperSafeSupplier.getAsBoolean()) {
+                stop();
+                return;
+            }
             BLUmotor.runDuty(MANUAL_POSITIVE_POWER);
             YELmotor.runDuty(MANUAL_POSITIVE_POWER);
         }
@@ -125,7 +150,12 @@ public class IntakeArm extends Subsystem1507{
         return Math.abs(getAverageAngle() - targetAngleDeg) < ANGLE_TOLERANCE_DEGREES;
     }
 
-    //uttility methods
+    /** True when a deploy command is being suppressed because the hopper hasn't cleared its safe threshold. */
+    public boolean isBlockedByHopper() {
+        return targetAngleDeg > RETRACTED_ANGLE_DEGREES && !hopperSafeSupplier.getAsBoolean();
+    }
+
+    // utility methods
     private static double clampAngle(double angleDeg) {
         return MathUtil.clamp(angleDeg, MIN_ANGLE_DEGREES, MAX_ANGLE_DEGREES);
     }

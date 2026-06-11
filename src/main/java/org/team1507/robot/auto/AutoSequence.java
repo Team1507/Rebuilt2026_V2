@@ -262,10 +262,11 @@ public final class AutoSequence {
     }
 
     /**
-     * Deploys the intake arm and spins the roller simultaneously.
+     * Extends the hopper, waits until it clears the safe threshold, then deploys
+     * the intake arm and spins the roller. Mirrors the teleop intake button exactly.
      *
-     * <p>WARNING: This command is INFINITE — the roller runs until interrupted.
-     * Always use this inside a .deadline() group so the driving path ends it:
+     * <p>WARNING: This command is INFINITE — always use it inside a .deadline() group
+     * so the driving path determines how long intake runs:
      *
      * <pre>
      *   .deadline(
@@ -275,10 +276,8 @@ public final class AutoSequence {
      * </pre>
      */
     public AutoSequence intakeDeploy() {
-        steps.add(Commands.parallel(
-            AutoBuilder.intakeArm.deployCommand(),
-            AutoBuilder.intakeRoller.runCommand()
-        ));
+        steps.add(RobotBehaviors.deployAndIntake(
+            AutoBuilder.hopper, AutoBuilder.intakeArm, AutoBuilder.intakeRoller));
         return this;
     }
 
