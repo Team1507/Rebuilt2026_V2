@@ -112,7 +112,6 @@ class NodeBoundsTest {
     private static final double ROBOT_CLEARANCE_RADIUS =
         kSwerve.FRONT_LEFT_LOCATION.getNorm() + BUMPER_BUFFER_METERS;
 
-
     // =========================================================================
     // Test 1 — Field boundary
     // =========================================================================
@@ -120,58 +119,57 @@ class NodeBoundsTest {
     @Test
     void allNodesWithinBounds() {
 
-        // ── Robot.Start ───────────────────────────────────────────────────
-        check("Robot.Start.RIGHT",  Nodes.Robot.Start.RIGHT);
-        check("Robot.Start.CENTER", Nodes.Robot.Start.CENTER);
-        check("Robot.Start.LEFT",   Nodes.Robot.Start.LEFT);
+        // ── Robot.Start ─────────────────────────────────────────────────────────────────────
+        check("Robot.Start.RIGHT",                                  Nodes.Robot.Start.RIGHT);
+        check("Robot.Start.CENTER",                                 Nodes.Robot.Start.CENTER);
+        check("Robot.Start.LEFT",                                   Nodes.Robot.Start.LEFT);
 
-        // ── Robot.Score ───────────────────────────────────────────────────
-        check("Robot.Score.RIGHT", Nodes.Robot.Score.RIGHT);
-        check("Robot.Score.LEFT",  Nodes.Robot.Score.LEFT);
+        // ── Robot.Score ─────────────────────────────────────────────────────────────────────
+        check("Robot.Score.RIGHT",                                  Nodes.Robot.Score.RIGHT);
+        check("Robot.Score.LEFT",                                   Nodes.Robot.Score.LEFT);
 
-        // ── Robot.Pickup ──────────────────────────────────────────────────
-        check("Robot.Pickup.APPROACH_RIGHT", Nodes.Robot.Pickup.APPROACH_RIGHT);
-        check("Robot.Pickup.STATION_RIGHT",  Nodes.Robot.Pickup.STATION_RIGHT);
-        check("Robot.Pickup.APPROACH_LEFT",  Nodes.Robot.Pickup.APPROACH_LEFT);
-        check("Robot.Pickup.STATION_LEFT",   Nodes.Robot.Pickup.STATION_LEFT);
+        // ── Robot.Pickup ────────────────────────────────────────────────────────────────────
+        check("Robot.Pickup.APPROACH_RIGHT",                        Nodes.Robot.Pickup.APPROACH_RIGHT);
+        check("Robot.Pickup.STATION_RIGHT",                         Nodes.Robot.Pickup.STATION_RIGHT);
+        check("Robot.Pickup.APPROACH_LEFT",                         Nodes.Robot.Pickup.APPROACH_LEFT);
+        check("Robot.Pickup.STATION_LEFT",                          Nodes.Robot.Pickup.STATION_LEFT);
 
-        // ── Robot.Waypoint ────────────────────────────────────────────────
-        check("Robot.Waypoint.MIDFIELD_RIGHT",  Nodes.Robot.Waypoint.MIDFIELD_RIGHT);
-        check("Robot.Waypoint.MIDFIELD_CENTER", Nodes.Robot.Waypoint.MIDFIELD_CENTER);
-        check("Robot.Waypoint.MIDFIELD_LEFT",   Nodes.Robot.Waypoint.MIDFIELD_LEFT);
+        // ── Robot.Waypoint ──────────────────────────────────────────────────────────────────
+        check("Robot.Waypoint.MIDFIELD_RIGHT",                      Nodes.Robot.Waypoint.MIDFIELD_RIGHT);
+        check("Robot.Waypoint.MIDFIELD_CENTER",                     Nodes.Robot.Waypoint.MIDFIELD_CENTER);
+        check("Robot.Waypoint.MIDFIELD_LEFT",                       Nodes.Robot.Waypoint.MIDFIELD_LEFT);
 
-        // ── Legacy.Start ──────────────────────────────────────────────────
+        // ── Legacy.Start ────────────────────────────────────────────────────────────────────
         // Copied from Rebuilt2026 — not yet confirmed against V2 field model.
-        check("Legacy.Start.RIGHT",               Nodes.Legacy.Start.RIGHT);
-        check("Legacy.Start.LEFT",                Nodes.Legacy.Start.LEFT);
-        check("Legacy.Start.SHOOTING_SPOT_RIGHT", Nodes.Legacy.Start.SHOOTING_SPOT_RIGHT);
-        check("Legacy.Start.SHOOTING_SPOT_LEFT",  Nodes.Legacy.Start.SHOOTING_SPOT_LEFT);
+        check("Legacy.Start.RIGHT",                                 Nodes.Legacy.Start.RIGHT);
+        check("Legacy.Start.LEFT",                                  Nodes.Legacy.Start.LEFT);
+        check("Legacy.Start.SHOOTING_SPOT_RIGHT",                   Nodes.Legacy.Start.SHOOTING_SPOT_RIGHT);
+        check("Legacy.Start.SHOOTING_SPOT_LEFT",                    Nodes.Legacy.Start.SHOOTING_SPOT_LEFT);
 
-        // ── Legacy.Midfield ───────────────────────────────────────────────
-        check("Legacy.Midfield.RIGHT_OVER_BUMP",          Nodes.Legacy.Midfield.RIGHT_OVER_BUMP);
-        check("Legacy.Midfield.RIGHT_OVER_BUMP2",         Nodes.Legacy.Midfield.RIGHT_OVER_BUMP2);
-        check("Legacy.Midfield.LEFT_OVER_BUMP",           Nodes.Legacy.Midfield.LEFT_OVER_BUMP);
-        check("Legacy.Midfield.RIGHT_BEFORE_BUMP",        Nodes.Legacy.Midfield.RIGHT_BEFORE_BUMP);
-        check("Legacy.Midfield.LEFT_BEFORE_BUMP",         Nodes.Legacy.Midfield.LEFT_BEFORE_BUMP);
-        check("Legacy.Midfield.RIGHT_TURN",               Nodes.Legacy.Midfield.RIGHT_TURN);
-        check("Legacy.Midfield.RIGHT_RIGHT_SUBWAY",       Nodes.Legacy.Midfield.RIGHT_RIGHT_SUBWAY);
-        check("Legacy.Midfield.LEFT_RIGHT_SUBWAY",        Nodes.Legacy.Midfield.LEFT_RIGHT_SUBWAY);
-        check("Legacy.Midfield.RIGHT_RUSH_SUBWAY",        Nodes.Legacy.Midfield.RIGHT_RUSH_SUBWAY);
-        check("Legacy.Midfield.LOWER_RIGHT_RIGHT_SUBWAY", Nodes.Legacy.Midfield.LOWER_RIGHT_RIGHT_SUBWAY);
-        check("Legacy.Midfield.RIGHT_LEFT_SUBWAY",        Nodes.Legacy.Midfield.RIGHT_LEFT_SUBWAY);
-        check("Legacy.Midfield.MIDDLE_RIGHT_SUBWAY",      Nodes.Legacy.Midfield.MIDDLE_RIGHT_SUBWAY);
-        check("Legacy.Midfield.LEFT_LEFT_SUBWAY",         Nodes.Legacy.Midfield.LEFT_LEFT_SUBWAY);
-        check("Legacy.Midfield.LEFT_FOOTLONG_SUBWAY",     Nodes.Legacy.Midfield.LEFT_FOOTLONG_SUBWAY);
-        check("Legacy.Midfield.SUBWAY_AROUND_THE_HUB",   Nodes.Legacy.Midfield.SUBWAY_AROUND_THE_HUB);
+        // ── Legacy.Midfield ─────────────────────────────────────────────────────────────────
+        check("Legacy.Midfield.RIGHT_OVER_BUMP",                    Nodes.Legacy.Midfield.RIGHT_OVER_BUMP);
+        check("Legacy.Midfield.RIGHT_OVER_BUMP2",                   Nodes.Legacy.Midfield.RIGHT_OVER_BUMP2);
+        check("Legacy.Midfield.LEFT_OVER_BUMP",                     Nodes.Legacy.Midfield.LEFT_OVER_BUMP);
+        check("Legacy.Midfield.RIGHT_BEFORE_BUMP",                  Nodes.Legacy.Midfield.RIGHT_BEFORE_BUMP);
+        check("Legacy.Midfield.LEFT_BEFORE_BUMP",                   Nodes.Legacy.Midfield.LEFT_BEFORE_BUMP);
+        check("Legacy.Midfield.RIGHT_TURN",                         Nodes.Legacy.Midfield.RIGHT_TURN);
+        check("Legacy.Midfield.RIGHT_RIGHT_SUBWAY",                 Nodes.Legacy.Midfield.RIGHT_RIGHT_SUBWAY);
+        check("Legacy.Midfield.LEFT_RIGHT_SUBWAY",                  Nodes.Legacy.Midfield.LEFT_RIGHT_SUBWAY);
+        check("Legacy.Midfield.RIGHT_RUSH_SUBWAY",                  Nodes.Legacy.Midfield.RIGHT_RUSH_SUBWAY);
+        check("Legacy.Midfield.LOWER_RIGHT_RIGHT_SUBWAY",           Nodes.Legacy.Midfield.LOWER_RIGHT_RIGHT_SUBWAY);
+        check("Legacy.Midfield.RIGHT_LEFT_SUBWAY",                  Nodes.Legacy.Midfield.RIGHT_LEFT_SUBWAY);
+        check("Legacy.Midfield.MIDDLE_RIGHT_SUBWAY",                Nodes.Legacy.Midfield.MIDDLE_RIGHT_SUBWAY);
+        check("Legacy.Midfield.LEFT_LEFT_SUBWAY",                   Nodes.Legacy.Midfield.LEFT_LEFT_SUBWAY);
+        check("Legacy.Midfield.LEFT_FOOTLONG_SUBWAY",               Nodes.Legacy.Midfield.LEFT_FOOTLONG_SUBWAY);
+        check("Legacy.Midfield.SUBWAY_AROUND_THE_HUB",              Nodes.Legacy.Midfield.SUBWAY_AROUND_THE_HUB);
 
-        // ── Legacy.Hub ────────────────────────────────────────────────────
-        check("Legacy.Hub.CENTER", Nodes.Legacy.Hub.CENTER);
+        // ── Legacy.Hub ──────────────────────────────────────────────────────────────────────
+        check("Legacy.Hub.CENTER",                                  Nodes.Legacy.Hub.CENTER);
 
-        // ── Legacy.Outpost ────────────────────────────────────────────────
-        check("Legacy.Outpost.RIGHT_APPROACH_POINT",       Nodes.Legacy.Outpost.RIGHT_APPROACH_POINT);
-        check("Legacy.Outpost.RIGHT_APPROACH_POINT_QUEST", Nodes.Legacy.Outpost.RIGHT_APPROACH_POINT_QUEST);
+        // ── Legacy.Outpost ──────────────────────────────────────────────────────────────────
+        check("Legacy.Outpost.RIGHT_APPROACH_POINT",                Nodes.Legacy.Outpost.RIGHT_APPROACH_POINT);
+        check("Legacy.Outpost.RIGHT_APPROACH_POINT_QUEST",          Nodes.Legacy.Outpost.RIGHT_APPROACH_POINT_QUEST);
     }
-
 
     // =========================================================================
     // Test 2 — Field element collision
@@ -180,54 +178,54 @@ class NodeBoundsTest {
     @Test
     void noRobotNodeCollidesWithObstacles() {
 
-        // ── Robot.Start ───────────────────────────────────────────────────
-        clearanceCheck("Robot.Start.RIGHT",  Nodes.Robot.Start.RIGHT);
-        clearanceCheck("Robot.Start.CENTER", Nodes.Robot.Start.CENTER);
-        clearanceCheck("Robot.Start.LEFT",   Nodes.Robot.Start.LEFT);
+        // ── Robot.Start ─────────────────────────────────────────────────────────────────────
+        clearanceCheck("Robot.Start.RIGHT",                         Nodes.Robot.Start.RIGHT);
+        clearanceCheck("Robot.Start.CENTER",                        Nodes.Robot.Start.CENTER);
+        clearanceCheck("Robot.Start.LEFT",                          Nodes.Robot.Start.LEFT);
 
-        // ── Robot.Score ───────────────────────────────────────────────────
-        clearanceCheck("Robot.Score.RIGHT", Nodes.Robot.Score.RIGHT);
-        clearanceCheck("Robot.Score.LEFT",  Nodes.Robot.Score.LEFT);
+        // ── Robot.Score ─────────────────────────────────────────────────────────────────────
+        clearanceCheck("Robot.Score.RIGHT",                         Nodes.Robot.Score.RIGHT);
+        clearanceCheck("Robot.Score.LEFT",                          Nodes.Robot.Score.LEFT);
 
-        // ── Robot.Pickup ──────────────────────────────────────────────────
-        clearanceCheck("Robot.Pickup.APPROACH_RIGHT", Nodes.Robot.Pickup.APPROACH_RIGHT);
-        clearanceCheck("Robot.Pickup.STATION_RIGHT",  Nodes.Robot.Pickup.STATION_RIGHT);
-        clearanceCheck("Robot.Pickup.APPROACH_LEFT",  Nodes.Robot.Pickup.APPROACH_LEFT);
-        clearanceCheck("Robot.Pickup.STATION_LEFT",   Nodes.Robot.Pickup.STATION_LEFT);
+        // ── Robot.Pickup ────────────────────────────────────────────────────────────────────
+        clearanceCheck("Robot.Pickup.APPROACH_RIGHT",               Nodes.Robot.Pickup.APPROACH_RIGHT);
+        clearanceCheck("Robot.Pickup.STATION_RIGHT",                Nodes.Robot.Pickup.STATION_RIGHT);
+        clearanceCheck("Robot.Pickup.APPROACH_LEFT",                Nodes.Robot.Pickup.APPROACH_LEFT);
+        clearanceCheck("Robot.Pickup.STATION_LEFT",                 Nodes.Robot.Pickup.STATION_LEFT);
 
-        // ── Robot.Waypoint ────────────────────────────────────────────────
-        clearanceCheck("Robot.Waypoint.MIDFIELD_RIGHT",  Nodes.Robot.Waypoint.MIDFIELD_RIGHT);
-        clearanceCheck("Robot.Waypoint.MIDFIELD_CENTER", Nodes.Robot.Waypoint.MIDFIELD_CENTER);
-        clearanceCheck("Robot.Waypoint.MIDFIELD_LEFT",   Nodes.Robot.Waypoint.MIDFIELD_LEFT);
+        // ── Robot.Waypoint ──────────────────────────────────────────────────────────────────
+        clearanceCheck("Robot.Waypoint.MIDFIELD_RIGHT",             Nodes.Robot.Waypoint.MIDFIELD_RIGHT);
+        clearanceCheck("Robot.Waypoint.MIDFIELD_CENTER",            Nodes.Robot.Waypoint.MIDFIELD_CENTER);
+        clearanceCheck("Robot.Waypoint.MIDFIELD_LEFT",              Nodes.Robot.Waypoint.MIDFIELD_LEFT);
 
-        // ── Legacy.Start ──────────────────────────────────────────────────
+        // ── Legacy.Start ────────────────────────────────────────────────────────────────────
         // Copied from Rebuilt2026 — not yet confirmed against V2 field model.
-        clearanceCheck("Legacy.Start.RIGHT",               Nodes.Legacy.Start.RIGHT);
-        clearanceCheck("Legacy.Start.LEFT",                Nodes.Legacy.Start.LEFT);
-        clearanceCheck("Legacy.Start.SHOOTING_SPOT_RIGHT", Nodes.Legacy.Start.SHOOTING_SPOT_RIGHT);
-        clearanceCheck("Legacy.Start.SHOOTING_SPOT_LEFT",  Nodes.Legacy.Start.SHOOTING_SPOT_LEFT);
+        clearanceCheck("Legacy.Start.RIGHT",                        Nodes.Legacy.Start.RIGHT);
+        clearanceCheck("Legacy.Start.LEFT",                         Nodes.Legacy.Start.LEFT);
+        clearanceCheck("Legacy.Start.SHOOTING_SPOT_RIGHT",          Nodes.Legacy.Start.SHOOTING_SPOT_RIGHT);
+        clearanceCheck("Legacy.Start.SHOOTING_SPOT_LEFT",           Nodes.Legacy.Start.SHOOTING_SPOT_LEFT);
 
-        // ── Legacy.Midfield ───────────────────────────────────────────────
-        clearanceCheck("Legacy.Midfield.RIGHT_OVER_BUMP",          Nodes.Legacy.Midfield.RIGHT_OVER_BUMP);
-        clearanceCheck("Legacy.Midfield.RIGHT_OVER_BUMP2",         Nodes.Legacy.Midfield.RIGHT_OVER_BUMP2);
-        clearanceCheck("Legacy.Midfield.LEFT_OVER_BUMP",           Nodes.Legacy.Midfield.LEFT_OVER_BUMP);
-        clearanceCheck("Legacy.Midfield.RIGHT_BEFORE_BUMP",        Nodes.Legacy.Midfield.RIGHT_BEFORE_BUMP);
-        clearanceCheck("Legacy.Midfield.LEFT_BEFORE_BUMP",         Nodes.Legacy.Midfield.LEFT_BEFORE_BUMP);
-        clearanceCheck("Legacy.Midfield.RIGHT_TURN",               Nodes.Legacy.Midfield.RIGHT_TURN);
-        clearanceCheck("Legacy.Midfield.RIGHT_RIGHT_SUBWAY",       Nodes.Legacy.Midfield.RIGHT_RIGHT_SUBWAY);
-        clearanceCheck("Legacy.Midfield.LEFT_RIGHT_SUBWAY",        Nodes.Legacy.Midfield.LEFT_RIGHT_SUBWAY);
-        clearanceCheck("Legacy.Midfield.RIGHT_RUSH_SUBWAY",        Nodes.Legacy.Midfield.RIGHT_RUSH_SUBWAY);
-        clearanceCheck("Legacy.Midfield.LOWER_RIGHT_RIGHT_SUBWAY", Nodes.Legacy.Midfield.LOWER_RIGHT_RIGHT_SUBWAY);
-        clearanceCheck("Legacy.Midfield.RIGHT_LEFT_SUBWAY",        Nodes.Legacy.Midfield.RIGHT_LEFT_SUBWAY);
-        clearanceCheck("Legacy.Midfield.MIDDLE_RIGHT_SUBWAY",      Nodes.Legacy.Midfield.MIDDLE_RIGHT_SUBWAY);
-        clearanceCheck("Legacy.Midfield.LEFT_LEFT_SUBWAY",         Nodes.Legacy.Midfield.LEFT_LEFT_SUBWAY);
-        clearanceCheck("Legacy.Midfield.LEFT_FOOTLONG_SUBWAY",     Nodes.Legacy.Midfield.LEFT_FOOTLONG_SUBWAY);
-        clearanceCheck("Legacy.Midfield.SUBWAY_AROUND_THE_HUB",   Nodes.Legacy.Midfield.SUBWAY_AROUND_THE_HUB);
+        // ── Legacy.Midfield ─────────────────────────────────────────────────────────────────
+        clearanceCheck("Legacy.Midfield.RIGHT_OVER_BUMP",           Nodes.Legacy.Midfield.RIGHT_OVER_BUMP);
+        clearanceCheck("Legacy.Midfield.RIGHT_OVER_BUMP2",          Nodes.Legacy.Midfield.RIGHT_OVER_BUMP2);
+        clearanceCheck("Legacy.Midfield.LEFT_OVER_BUMP",            Nodes.Legacy.Midfield.LEFT_OVER_BUMP);
+        clearanceCheck("Legacy.Midfield.RIGHT_BEFORE_BUMP",         Nodes.Legacy.Midfield.RIGHT_BEFORE_BUMP);
+        clearanceCheck("Legacy.Midfield.LEFT_BEFORE_BUMP",          Nodes.Legacy.Midfield.LEFT_BEFORE_BUMP);
+        clearanceCheck("Legacy.Midfield.RIGHT_TURN",                Nodes.Legacy.Midfield.RIGHT_TURN);
+        clearanceCheck("Legacy.Midfield.RIGHT_RIGHT_SUBWAY",        Nodes.Legacy.Midfield.RIGHT_RIGHT_SUBWAY);
+        clearanceCheck("Legacy.Midfield.LEFT_RIGHT_SUBWAY",         Nodes.Legacy.Midfield.LEFT_RIGHT_SUBWAY);
+        clearanceCheck("Legacy.Midfield.RIGHT_RUSH_SUBWAY",         Nodes.Legacy.Midfield.RIGHT_RUSH_SUBWAY);
+        clearanceCheck("Legacy.Midfield.LOWER_RIGHT_RIGHT_SUBWAY",  Nodes.Legacy.Midfield.LOWER_RIGHT_RIGHT_SUBWAY);
+        clearanceCheck("Legacy.Midfield.RIGHT_LEFT_SUBWAY",         Nodes.Legacy.Midfield.RIGHT_LEFT_SUBWAY);
+        clearanceCheck("Legacy.Midfield.MIDDLE_RIGHT_SUBWAY",       Nodes.Legacy.Midfield.MIDDLE_RIGHT_SUBWAY);
+        clearanceCheck("Legacy.Midfield.LEFT_LEFT_SUBWAY",          Nodes.Legacy.Midfield.LEFT_LEFT_SUBWAY);
+        clearanceCheck("Legacy.Midfield.LEFT_FOOTLONG_SUBWAY",      Nodes.Legacy.Midfield.LEFT_FOOTLONG_SUBWAY);
+        clearanceCheck("Legacy.Midfield.SUBWAY_AROUND_THE_HUB",     Nodes.Legacy.Midfield.SUBWAY_AROUND_THE_HUB);
 
-        // ── Legacy.Hub ────────────────────────────────────────────────────
-        clearanceCheck("Legacy.Hub.CENTER", Nodes.Legacy.Hub.CENTER);
+        // ── Legacy.Hub ──────────────────────────────────────────────────────────────────────
+        clearanceCheck("Legacy.Hub.CENTER",                         Nodes.Legacy.Hub.CENTER);
 
-        // ── Legacy.Outpost ────────────────────────────────────────────────
+        // ── Legacy.Outpost ──────────────────────────────────────────────────────────────────
         clearanceCheck("Legacy.Outpost.RIGHT_APPROACH_POINT",       Nodes.Legacy.Outpost.RIGHT_APPROACH_POINT);
         clearanceCheck("Legacy.Outpost.RIGHT_APPROACH_POINT_QUEST", Nodes.Legacy.Outpost.RIGHT_APPROACH_POINT_QUEST);
     }
@@ -238,12 +236,11 @@ class NodeBoundsTest {
      */
     private void clearanceCheck(String name, Pose2d pose) {
         Translation2d position = pose.getTranslation();
-        obstacle(name, position, "FieldElements.Hub", Nodes.FieldElements.Hub.CORNERS);
+        obstacle(name, position, "FieldElements.Hub",       Nodes.FieldElements.Hub.CORNERS);
 
         // Add more obstacles here after game reveal:
         // obstacle(name, position, "FieldElements.Trench", Nodes.FieldElements.Trench.CORNERS);
     }
-
 
     // =========================================================================
     // Helpers
