@@ -114,11 +114,12 @@ public class Constants {
 
     public static final class kHopper {
 
-        /** Hopper target positions (in degrees). */ 
-        public static final double RETRACTED_POS = 0.0; 
+        /** Hopper target positions (in degrees). */
+        public static final double RETRACTED_POS = 0.0;
         public static final double EXTENDED_POS = 12.0;
         public static final double SAFE_EXTENDED = 10.0;
         public static final double MAX_POS = 12.1;
+        public static final double POSITION_TOLERANCE = 0.5;
 
         public static final double MANUAL_POSITIVE_POWER = -0.2;
         public static final double MANUAL_NEGATIVE_POWER = 0.2;

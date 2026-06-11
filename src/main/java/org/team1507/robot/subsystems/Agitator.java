@@ -26,6 +26,8 @@ public class Agitator extends Subsystem1507 {
     private final Motor1507 yelMotor;
     private final BaseStatusSignal[] agitatorSignals;
 
+    private double targetAmps = 0.0;
+
     public Agitator() {
         super("Agitator");
 
@@ -45,21 +47,25 @@ public class Agitator extends Subsystem1507 {
 
 
     public void toShooter() {
-        bluMotor.runTorqueCurrent(kAgitator.TORQUE_LOW);
-        yelMotor.runTorqueCurrent(kAgitator.TORQUE_LOW);
+        targetAmps = kAgitator.TORQUE_LOW;
+        bluMotor.runTorqueCurrent(targetAmps);
+        yelMotor.runTorqueCurrent(targetAmps);
     }
 
     public void toIntake() {
-        bluMotor.runTorqueCurrent(-kAgitator.TORQUE_LOW);
-        yelMotor.runTorqueCurrent(-kAgitator.TORQUE_LOW);
+        targetAmps = -kAgitator.TORQUE_LOW;
+        bluMotor.runTorqueCurrent(targetAmps);
+        yelMotor.runTorqueCurrent(targetAmps);
     }
 
     public void toOuttake() {
-        bluMotor.runTorqueCurrent(kAgitator.OUTTAKE_TORQUE);
-        yelMotor.runTorqueCurrent(kAgitator.OUTTAKE_TORQUE);
+        targetAmps = kAgitator.OUTTAKE_TORQUE;
+        bluMotor.runTorqueCurrent(targetAmps);
+        yelMotor.runTorqueCurrent(targetAmps);
     }
 
     public void stop() {
+        targetAmps = 0.0;
         bluMotor.stop();
         yelMotor.stop();
     }
@@ -78,10 +84,13 @@ public class Agitator extends Subsystem1507 {
     public void periodic() {
         BaseStatusSignal.refreshAll(agitatorSignals);
 
-        log("BLU/VelocityRPS", bluMotor.getRotorVelocity());
-        log("YEL/VelocityRPS", yelMotor.getRotorVelocity());
-        log("BLU/StatorAmps",  bluMotor.getStatorCurrent());
-        log("YEL/StatorAmps",  yelMotor.getStatorCurrent());
+        log("VelocityRPS",      (bluMotor.getRotorVelocity() + yelMotor.getRotorVelocity()) / 2.0);
+        log("TargetAmps",       targetAmps);
+        log("TotalCurrentAmps", bluMotor.getStatorCurrent() + yelMotor.getStatorCurrent());
+        log("BLU/VelocityRPS",  bluMotor.getRotorVelocity());
+        log("YEL/VelocityRPS",  yelMotor.getRotorVelocity());
+        log("BLU/StatorAmps",   bluMotor.getStatorCurrent());
+        log("YEL/StatorAmps",   yelMotor.getStatorCurrent());
     }
 
     // =========================================================================

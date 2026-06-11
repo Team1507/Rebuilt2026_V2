@@ -78,14 +78,14 @@ public class Hopper extends Subsystem1507 {
         return !halSensor.get();
     }
 
-    /** True when the hopper has extended past the safe threshold for intake deployment. */
+    /** True when the hopper has reached its full extended target position (EXTENDED_POS). */
     public boolean isHopperFullyExtended() {
-        return getPositionDegrees() >= kHopper.SAFE_EXTENDED;
+        return getPositionDegrees() >= kHopper.EXTENDED_POS - kHopper.POSITION_TOLERANCE;
     }
 
-    /** Alias for {@link #isHopperFullyExtended()} — used by RobotBehaviors to gate intake deployment. */
+    /** True when the hopper has cleared the safe threshold for intake arm deployment (SAFE_EXTENDED). */
     public boolean isHopperSafeForIntake() {
-        return isHopperFullyExtended();
+        return getPositionDegrees() >= kHopper.SAFE_EXTENDED;
     }
 
     // =========================================================================
@@ -108,8 +108,9 @@ public class Hopper extends Subsystem1507 {
 
         log("PositionDegrees", getPositionDegrees());
         log("TargetDegrees",   targetPosition);
-        log("ReverseLimit",    isAtReverseLimit());
         log("FullyExtended",   isHopperFullyExtended());
+        log("SafeForIntake",   isHopperSafeForIntake());
+        log("ReverseLimit",    isAtReverseLimit());
         log("StatorAmps",      hopperMotor.getStatorCurrent());
     }
 
