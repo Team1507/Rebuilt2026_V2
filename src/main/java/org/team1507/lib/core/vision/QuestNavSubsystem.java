@@ -85,6 +85,10 @@ public final class QuestNavSubsystem extends Subsystem1507 {
      */
     private static final double SET_POSE_TIMEOUT_SECONDS = 3.0;
 
+    /** 2026 REBUILT field dimensions (meters). Used to reject out-of-bounds vision poses. */
+    private static final double FIELD_MAX_X = 16.46;
+    private static final double FIELD_MAX_Y =  8.21;
+
     // =========================================================================
     // Callbacks passed in from Robot.java
     // =========================================================================
@@ -219,6 +223,19 @@ public final class QuestNavSubsystem extends Subsystem1507 {
         for (PoseFrame frame : questNav.getAllUnreadPoseFrames()) {
             Pose3d robotPose3d = questPoseToRobotPose(frame.questPose3d());
             Pose2d robotPose2d = robotPose3d.toPose2d();
+
+            double px = robotPose2d.getX();
+            double py = robotPose2d.getY();
+
+            // Reject poses containing NaN or outside the field boundary.
+            // A bad Quest frame can otherwise inject a garbage pose into the Kalman filter.
+            if (Double.isNaN(px) || Double.isNaN(py)
+                    || px < 0 || px > FIELD_MAX_X
+                    || py < 0 || py > FIELD_MAX_Y) {
+                log("PoseRejected", true);
+                continue;
+            }
+            log("PoseRejected", false);
 
             onMeasurement.addMeasurement(
                 robotPose2d,

@@ -299,7 +299,13 @@ public final class AutoSequence {
         return this;
     }
 
-    /** Shoots at kShooter.SAFE_RPM until the auto timer reaches matchTimeSeconds. */
+    /**
+     * Shoots at kShooter.SAFE_RPM until the auto timer reaches matchTimeSeconds.
+     *
+     * <p>Timer-safe in branches: branch sub-sequences share the root timer via the
+     * package-private {@code AutoSequence(Timer)} constructor, so this works correctly
+     * inside {@code .deadline()}, {@code .parallel()}, and {@code .race()} groups.
+     */
     public AutoSequence shootUntil(double matchTimeSeconds) {
         steps.add(Commands.deadline(
             endAtTime(matchTimeSeconds),
@@ -310,7 +316,7 @@ public final class AutoSequence {
         return this;
     }
 
-    /** Shoots at the given RPM until the auto timer reaches matchTimeSeconds. */
+    /** Shoots at the given RPM until the auto timer reaches matchTimeSeconds. Timer-safe in branches (see {@link #shootUntil}). */
     public AutoSequence shootRPMUntil(double matchTimeSeconds, double rpm) {
         steps.add(Commands.deadline(
             endAtTime(matchTimeSeconds),

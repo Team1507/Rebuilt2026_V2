@@ -30,7 +30,8 @@ public class Hopper extends Subsystem1507 {
     private final BaseStatusSignal[] hopperSignals;
     private final DigitalInput halSensor;
 
-    private double targetPosition = 0.0;
+    private double  targetPosition   = 0.0;
+    private boolean wasAtReverseLimit = false;
 
     public Hopper() {
         super("Hopper");
@@ -106,10 +107,13 @@ public class Hopper extends Subsystem1507 {
     public void periodic() {
         BaseStatusSignal.refreshAll(hopperSignals);
 
-        // Auto-zero the encoder whenever the reverse limit switch is active.
-        if (isAtReverseLimit()) {
+        // Zero the encoder on the false→true transition of the reverse limit switch.
+        // Calling setPosition() every loop while held would send 50 CAN frames/s for nothing.
+        boolean atLimit = isAtReverseLimit();
+        if (atLimit && !wasAtReverseLimit) {
             ((TalonFX) hopperMotor.getDevice()).setPosition(0.0);
         }
+        wasAtReverseLimit = atLimit;
 
         log("PositionDegrees", getPositionDegrees());
         log("TargetDegrees",   targetPosition);
