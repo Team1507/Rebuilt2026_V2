@@ -49,9 +49,12 @@ public class IntakeArm extends Subsystem1507{
     public void periodic() {
         BaseStatusSignal.refreshAll(armSignals);
 
-        log("AngleDegrees",getAverageAngle());
-        log("TargetDegrees",getTargetAngle());
-        log("Stalled",isStalled());
+        log("AngleDegrees",   getAverageAngle());
+        log("TargetDegrees",  getTargetAngle());
+        log("AtTarget",       isAtTarget());
+        log("BLU/StatorAmps", BLUmotor.getStatorCurrent());
+        log("YEL/StatorAmps", YELmotor.getStatorCurrent());
+        log("Stalled",        isStalled());
     }
 
     public void setAngle(double angleDeg) {

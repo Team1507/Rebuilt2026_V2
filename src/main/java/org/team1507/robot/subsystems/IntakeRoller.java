@@ -40,11 +40,10 @@ public class IntakeRoller extends Subsystem1507 {
  
     BaseStatusSignal.refreshAll(motorSignals);
 
-    // TODO: Log telemetry
-    // log("someField", someValue);
-    log("Stalled",isStalled());
-    log("CurrentVelocityRps", intakeRollerMotor.getRotorVelocity());
-    
+    log("VelocityRPS", intakeRollerMotor.getRotorVelocity());
+    log("StatorAmps",  intakeRollerMotor.getStatorCurrent());
+    log("Stalled",     isStalled());
+
   }
 
   public void run() {
