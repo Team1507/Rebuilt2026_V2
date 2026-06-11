@@ -88,6 +88,11 @@ public class Hopper extends Subsystem1507 {
         return getPositionDegrees() >= kHopper.SAFE_EXTENDED;
     }
 
+    /** True when the hopper is fully retracted — hall sensor (hardware) or position within tolerance (sim). */
+    public boolean isAtRetractedPosition() {
+        return isAtReverseLimit() || getPositionDegrees() <= kHopper.RETRACTED_POS + kHopper.POSITION_TOLERANCE;
+    }
+
     // =========================================================================
     // Periodic
     // =========================================================================
@@ -138,11 +143,12 @@ public class Hopper extends Subsystem1507 {
             .onEnd((interrupted, timedOut, stalled) -> stop());
     }
 
-    /** Retracts the hopper to RETRACTED_POS. Runs until interrupted. */
+    /** Retracts the hopper to RETRACTED_POS. Finishes when fully retracted or stalled. */
     public Command retractCommand() {
         return new CommandBuilder(this)
             .named("hopper.retract")
             .onExecute(() -> setPosition(kHopper.RETRACTED_POS))
+            .isFinished(this::isAtRetractedPosition)
             .onEnd((interrupted, timedOut, stalled) -> stop());
     }
 

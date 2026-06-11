@@ -94,7 +94,7 @@ public final class Robot extends LoggedRobot {
 
         // Autonomous chooser
         AutoBuilder.init(swerve, intakeArm, intakeRoller, hopper, agitator, feeder, shooter);
-        autoChooser.setDefaultOption("Drive Forward",         DriveForwardAuto.build());
+        autoChooser.setDefaultOption("Drive Forward",          DriveForwardAuto.build());
         autoChooser.addOption("Raymond (shoot only)",          AutoahRaymond.build());
         autoChooser.addOption("Human Player Quest",            AutoHumanPlayerQuest.build());
         autoChooser.addOption("Subway 6-inch Right",           AutoSubway6inchRight.build());

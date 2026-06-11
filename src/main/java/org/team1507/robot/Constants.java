@@ -184,7 +184,10 @@ public class Constants {
         public static final double POSITION_TOLERANCE = 0.5;
 
         public static final double MANUAL_POSITIVE_POWER = -0.2;
-        public static final double MANUAL_NEGATIVE_POWER = 0.2;
+        public static final double MANUAL_NEGATIVE_POWER =  0.2;
+
+        /** Max time to wait for hopper to reach SAFE_EXTENDED before deploying arm anyway. */
+        public static final double DEPLOY_TIMEOUT_SECONDS = 1.5;
 
         // /** Gear ratio for the hopper gearbox. */
         // public static final GearRatio RATIO =
@@ -472,6 +475,9 @@ public class Constants {
              */
             public static final double STALL_THRESHOLD = 0.02; // meters
             public static final double STALL_TIMEOUT   = 1.5;  // seconds
+
+            /** Wall-clock deadline for moveThroughPose: exits if the command runs longer than this. */
+            public static final double MAX_MOVETHROUGH_SECONDS = 5.0;
 
             /** Arrival threshold for driveToPoint / driveForwardMeters (meters). */
             public static final double ARRIVE_THRESHOLD = 0.05; // 5 cm

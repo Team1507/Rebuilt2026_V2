@@ -88,7 +88,9 @@ public final class AutoSequence {
     private Double nextAngularOverride = null;
 
     // Autonomous match timer — started with .startTimer(), read by .waitUntilTime() etc.
-    private final Timer autoTimer = new Timer();
+    // Passed into branch sub-sequences so timer-gated steps (shootUntil, waitUntilTime)
+    // read the same running clock as the root sequence.
+    private final Timer autoTimer;
 
 
     // -------------------------------------------------------------------------
@@ -99,7 +101,14 @@ public final class AutoSequence {
      * Creates a new AutoSequence builder.
      * No arguments needed — all subsystems are accessed through AutoBuilder.
      */
-    public AutoSequence() {}
+    public AutoSequence() {
+        this.autoTimer = new Timer();
+    }
+
+    /** Package-private: shares the root sequence's timer with a branch sub-sequence. */
+    AutoSequence(Timer sharedTimer) {
+        this.autoTimer = sharedTimer;
+    }
 
 
     // =========================================================================
@@ -365,7 +374,7 @@ public final class AutoSequence {
     public AutoSequence parallel(Branch... branches) {
         List<Command> commands = new ArrayList<>();
         for (Branch branch : branches) {
-            AutoSequence sub = new AutoSequence();
+            AutoSequence sub = new AutoSequence(this.autoTimer);
             branch.build(sub);
             commands.add(sub.build());
         }
@@ -388,7 +397,7 @@ public final class AutoSequence {
     public AutoSequence race(Branch... branches) {
         List<Command> commands = new ArrayList<>();
         for (Branch branch : branches) {
-            AutoSequence sub = new AutoSequence();
+            AutoSequence sub = new AutoSequence(this.autoTimer);
             branch.build(sub);
             commands.add(sub.build());
         }
@@ -410,12 +419,12 @@ public final class AutoSequence {
      *   )
      */
     public AutoSequence deadline(Branch deadlineBranch, Branch... others) {
-        AutoSequence deadlineSeq = new AutoSequence();
+        AutoSequence deadlineSeq = new AutoSequence(this.autoTimer);
         deadlineBranch.build(deadlineSeq);
 
         List<Command> otherCommands = new ArrayList<>();
         for (Branch branch : others) {
-            AutoSequence sub = new AutoSequence();
+            AutoSequence sub = new AutoSequence(this.autoTimer);
             branch.build(sub);
             otherCommands.add(sub.build());
         }

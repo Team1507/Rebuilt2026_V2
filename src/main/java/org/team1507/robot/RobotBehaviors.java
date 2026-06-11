@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 
+import org.team1507.robot.Constants.kHopper;
 import org.team1507.robot.subsystems.Agitator;
 import org.team1507.robot.subsystems.Feeder;
 import org.team1507.robot.subsystems.Hopper;
@@ -105,7 +106,12 @@ public final class RobotBehaviors {
         return Commands.parallel(
             hopper.holdExtendedCommand(),
             Commands.sequence(
-                Commands.waitUntil(hopper::isHopperSafeForIntake),
+                // Race the safe-threshold check against a timeout so a stalled hopper
+                // never blocks the arm from deploying indefinitely.
+                Commands.race(
+                    Commands.waitUntil(hopper::isHopperSafeForIntake),
+                    Commands.waitSeconds(kHopper.DEPLOY_TIMEOUT_SECONDS)
+                ),
                 Commands.parallel(
                     intakeArm.deployCommand(),
                     intakeRoller.runCommand()

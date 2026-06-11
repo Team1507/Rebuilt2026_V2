@@ -69,7 +69,7 @@ public final class Nodes {
             public static final Pose2d APPROACH_RIGHT = Node.at(0.9, 0.70, 180.0);
             public static final Pose2d STATION_RIGHT  = Node.at(0.5, 0.70, 180.0);
             public static final Pose2d APPROACH_LEFT  = Node.at(0.9, 7.12, 180.0);
-            public static final Pose2d STATION_LEFT   = Node.at(0.5, 8.12, 180.0);
+            public static final Pose2d STATION_LEFT   = Node.at(0.5, 7.51, 180.0);
         }
 
         // Waypoints — intermediate navigation poses used when routing across
