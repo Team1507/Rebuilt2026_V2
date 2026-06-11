@@ -8,6 +8,8 @@
 
 package org.team1507.robot;
 
+import java.util.function.Supplier;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.*;
@@ -50,7 +52,7 @@ public final class Robot extends LoggedRobot {
     // -------------------------------------------------------------------------
 
     private Command m_autoCommand = null;
-    private final SendableChooser<Command> autoChooser = new SendableChooser<>();
+    private final SendableChooser<Supplier<Command>> autoChooser = new SendableChooser<>();
 
     // =========================================================================
     // Constructor
@@ -90,16 +92,16 @@ public final class Robot extends LoggedRobot {
 
         // Autonomous chooser
         AutoBuilder.init(swerve, intakeArm, intakeRoller, hopper, agitator, feeder, shooter);
-        autoChooser.setDefaultOption("Drive Forward",          DriveForwardAuto.build());
-        autoChooser.addOption("Raymond (shoot only)",          AutoahRaymond.build());
-        autoChooser.addOption("Human Player Quest",            AutoHumanPlayerQuest.build());
-        autoChooser.addOption("Subway 6-inch Right",           AutoSubway6inchRight.build());
-        autoChooser.addOption("Subway 6-inch Left",            AutoSubway6inchLeft.build());
-        autoChooser.addOption("Subway Footlong Right",         AutoSubwayFootlongRight.build());
-        autoChooser.addOption("Subway 18-inch Right",          AutoSubway18Inch.build());
-        autoChooser.addOption("Subway 18-inch Left",            AutoSubway18InchLeftBlue.build());
-        autoChooser.addOption("Double Subway",                 AutoDoubleSubway.build());
-        autoChooser.addOption("Subway Around The Hub",         AutoSubwayAroundTheHub.build());
+        autoChooser.setDefaultOption("Drive Forward",          DriveForwardAuto::build);
+        autoChooser.addOption("Raymond (shoot only)",          AutoahRaymond::build);
+        autoChooser.addOption("Human Player Quest",            AutoHumanPlayerQuest::build);
+        autoChooser.addOption("Subway 6-inch Right",           AutoSubway6inchRight::build);
+        autoChooser.addOption("Subway 6-inch Left",            AutoSubway6inchLeft::build);
+        autoChooser.addOption("Subway Footlong Right",         AutoSubwayFootlongRight::build);
+        autoChooser.addOption("Subway 18-inch Right",          AutoSubway18Inch::build);
+        autoChooser.addOption("Subway 18-inch Left",           AutoSubway18InchLeftBlue::build);
+        autoChooser.addOption("Double Subway",                 AutoDoubleSubway::build);
+        autoChooser.addOption("Subway Around The Hub",         AutoSubwayAroundTheHub::build);
         SmartDashboard.putData("Auto Mode", autoChooser);
 
         // Controllers and bindings — bottomDriver = port 0 (driver), topDriver = port 1 (operator)
@@ -199,7 +201,8 @@ public final class Robot extends LoggedRobot {
 
     @Override
     public void autonomousInit() {
-        m_autoCommand = autoChooser.getSelected();
+        Supplier<Command> factory = autoChooser.getSelected();
+        m_autoCommand = (factory != null) ? factory.get() : null;
         if (m_autoCommand != null) {
             CommandScheduler.getInstance().schedule(m_autoCommand);
         }
