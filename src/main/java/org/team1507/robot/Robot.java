@@ -93,7 +93,16 @@ public final class Robot extends LoggedRobot {
 
         // Autonomous chooser
         AutoBuilder.init(swerve, intakeArm, intakeRoller, hopper, agitator, feeder, shooter);
-        autoChooser.setDefaultOption("Drive Forward", DriveForwardAuto.build());
+        autoChooser.setDefaultOption("Drive Forward",         DriveForwardAuto.build());
+        autoChooser.addOption("Raymond (shoot only)",          AutoahRaymond.build());
+        autoChooser.addOption("Human Player Quest",            AutoHumanPlayerQuest.build());
+        autoChooser.addOption("Subway 6-inch Right",           AutoSubway6inchRight.build());
+        autoChooser.addOption("Subway 6-inch Left",            AutoSubway6inchLeft.build());
+        autoChooser.addOption("Subway Footlong Right",         AutoSubwayFootlongRight.build());
+        autoChooser.addOption("Subway 18-inch Right",          AutoSubway18Inch.build());
+        autoChooser.addOption("Subway 18-inch Left (Blue)",    AutoSubway18InchLeftBlue.build());
+        autoChooser.addOption("Double Subway",                 AutoDoubleSubway.build());
+        autoChooser.addOption("Subway Around The Hub",         AutoSubwayAroundTheHub.build());
         SmartDashboard.putData("Auto Mode", autoChooser);
 
         // Controllers and bindings — bottomDriver = port 0 (driver), topDriver = port 1 (operator)

@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 
+import org.team1507.robot.Constants;
 import org.team1507.robot.RobotBehaviors;
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -191,9 +192,39 @@ public final class AutoSequence {
         return this;
     }
 
+    /** Drives to a field pose and stops on arrival. Convenience alias for driveToPoint(target, true). */
+    public AutoSequence driveTo(Pose2d target) {
+        steps.add(AutoBuilder.swerve.driveToPoint(target, consumeSpeed(), true));
+        return this;
+    }
+
+    /**
+     * Drives toward a waypoint and continues as soon as the robot is within passRadius meters.
+     * Use for chained waypoints where a full stop is unnecessary.
+     * Speed is set by the preceding modifier or defaults to full speed.
+     */
+    public AutoSequence moveThrough(Pose2d waypoint, double passRadius) {
+        double angular = consumeAngular();
+        double speed   = consumeSpeed();
+        steps.add(AutoBuilder.swerve.moveThroughPose(waypoint, speed, angular, passRadius));
+        return this;
+    }
+
+    /** Rotates to face the given field pose. The robot's position does not change. */
+    public AutoSequence pointToTarget(Pose2d target) {
+        steps.add(AutoBuilder.swerve.pointToTarget(target));
+        return this;
+    }
+
     /** Rotates to face a target heading in degrees. */
     public AutoSequence changeHeading(double headingDeg) {
         steps.add(AutoBuilder.swerve.changeHeading(headingDeg));
+        return this;
+    }
+
+    /** Snaps to the heading stored in the given pose's rotation component. */
+    public AutoSequence changeHeading(Pose2d pose) {
+        steps.add(AutoBuilder.swerve.changeHeading(pose));
         return this;
     }
 
@@ -217,6 +248,69 @@ public final class AutoSequence {
     //       return this;
     //   }
     // =========================================================================
+
+    /** Raises the intake arm to the retracted (travel-safe) position. Rollers are unaffected. Use before crossing field bumps. */
+    public AutoSequence intakeHigh() {
+        steps.add(AutoBuilder.intakeArm.retractCommand());
+        return this;
+    }
+
+    /** Lowers the intake arm to the deployed (ground-pickup) position. Rollers are unaffected. */
+    public AutoSequence intakeLow() {
+        steps.add(AutoBuilder.intakeArm.deployCommand());
+        return this;
+    }
+
+    /**
+     * Deploys the intake arm and spins the roller simultaneously.
+     *
+     * <p>WARNING: This command is INFINITE — the roller runs until interrupted.
+     * Always use this inside a .deadline() group so the driving path ends it:
+     *
+     * <pre>
+     *   .deadline(
+     *       seq -> seq.slow().moveThrough(ENTRY, 0.5).slow().moveThrough(EXIT, 0.5),
+     *       seq -> seq.intakeDeploy()
+     *   )
+     * </pre>
+     */
+    public AutoSequence intakeDeploy() {
+        steps.add(Commands.parallel(
+            AutoBuilder.intakeArm.deployCommand(),
+            AutoBuilder.intakeRoller.runCommand()
+        ));
+        return this;
+    }
+
+    /** Stops the intake roller and retracts the arm simultaneously. Both are finite; safe to use in .parallel(). */
+    public AutoSequence intakeRetract() {
+        steps.add(Commands.parallel(
+            AutoBuilder.intakeArm.retractCommand(),
+            AutoBuilder.intakeRoller.stopCommand()
+        ));
+        return this;
+    }
+
+    /** Shoots at kShooter.SAFE_RPM until the auto timer reaches matchTimeSeconds. */
+    public AutoSequence shootUntil(double matchTimeSeconds) {
+        steps.add(Commands.deadline(
+            endAtTime(matchTimeSeconds),
+            RobotBehaviors.shootFixedRPM(
+                AutoBuilder.shooter, AutoBuilder.feeder, AutoBuilder.agitator,
+                Constants.kShooter.SAFE_RPM)
+        ));
+        return this;
+    }
+
+    /** Shoots at the given RPM until the auto timer reaches matchTimeSeconds. */
+    public AutoSequence shootRPMUntil(double matchTimeSeconds, double rpm) {
+        steps.add(Commands.deadline(
+            endAtTime(matchTimeSeconds),
+            RobotBehaviors.shootFixedRPM(
+                AutoBuilder.shooter, AutoBuilder.feeder, AutoBuilder.agitator, rpm)
+        ));
+        return this;
+    }
 
 
     // =========================================================================

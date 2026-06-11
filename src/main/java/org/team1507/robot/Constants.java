@@ -48,30 +48,30 @@ public class Constants {
     public static final class RobotMap {
 
         // Front Left module
-        public static final int FL_DRIVE   = 7;
-        public static final int FL_STEER   = 8;
-        public static final int FL_ENCODER = 9;
+        public static final int    FL_DRIVE          = 7;
+        public static final int    FL_STEER          = 8;
+        public static final int    FL_ENCODER        = 9;
         /** Rotations to align the front-left wheel to straight forward. */
         public static final double FL_ENCODER_OFFSET = 0.129150390625;
 
         // Front Right module
-        public static final int FR_DRIVE   = 1;
-        public static final int FR_STEER   = 2;
-        public static final int FR_ENCODER = 3;
+        public static final int    FR_DRIVE          = 1;
+        public static final int    FR_STEER          = 2;
+        public static final int    FR_ENCODER        = 3;
         /** Rotations to align the front-right wheel to straight forward. */
         public static final double FR_ENCODER_OFFSET = -0.28515625;
 
         // Back Left module
-        public static final int BL_DRIVE   = 4;
-        public static final int BL_STEER   = 5;
-        public static final int BL_ENCODER = 6;
+        public static final int    BL_DRIVE          = 4;
+        public static final int    BL_STEER          = 5;
+        public static final int    BL_ENCODER        = 6;
         /** Rotations to align the back-left wheel to straight forward. */
         public static final double BL_ENCODER_OFFSET = -0.436767578125;
 
         // Back Right module
-        public static final int BR_DRIVE   = 10;
-        public static final int BR_STEER   = 11;
-        public static final int BR_ENCODER = 12;
+        public static final int    BR_DRIVE          = 10;
+        public static final int    BR_STEER          = 11;
+        public static final int    BR_ENCODER        = 12;
         /** Rotations to align the back-right wheel to straight forward. */
         public static final double BR_ENCODER_OFFSET = 0.138671875;
 
@@ -83,10 +83,9 @@ public class Constants {
         public static final int OPERATOR_CONTROLLER = 1;
 
         // Intake
-        public static final int INTAKE_ARM_BLUE = 13;
+        public static final int INTAKE_ARM_BLUE   = 13;
         public static final int INTAKE_ARM_YELLOW = 14;
-
-        public static final int INTAKE_ROLLER = 27;
+        public static final int INTAKE_ROLLER     = 27;
 
         // Hopper
         public static final int HOPPER     = 16;
@@ -108,6 +107,69 @@ public class Constants {
     }
 
     // ╔═══════════════════════════════════════════════════════════════╗
+    // ║                      AGITATOR CONSTANTS                       ║
+    // ║               (Arcane Material Stirring Engine)               ║
+    // ╚═══════════════════════════════════════════════════════════════╝
+
+    public static final class kAgitator {
+
+        public static final double TORQUE_LOW     = 5.0;
+        public static final double TORQUE_HIGH    = 15.0;
+        public static final double TORQUE_IDLE    = 0.5;
+        public static final double OUTTAKE_TORQUE = -10.0;
+        public static final double AUTO_TORQUE    = 10.0;
+
+        public static final MotorConfig BLU_CONFIG =
+            MotorConfig.builder(ControlMode.TORQUE)
+                .withStatorCurrentLimit(Amps.of(20))
+                .withSupplyCurrentLimit(Amps.of(40))
+                .withPeakTorqueCurrent(20.0, -10.0)
+                .withSimVelocityRps(50)
+                .withBrake()
+                .build();
+
+        public static final MotorConfig YEL_CONFIG =
+            MotorConfig.builder(ControlMode.TORQUE)
+                .withStatorCurrentLimit(Amps.of(20))
+                .withSupplyCurrentLimit(Amps.of(40))
+                .withPeakTorqueCurrent(20.0, -10.0)
+                .withSimVelocityRps(50)
+                .withBrake()
+                .build();
+    }
+
+    // ╔═══════════════════════════════════════════════════════════════╗
+    // ║                       FEEDER CONSTANTS                        ║
+    // ║             (Mana‑Driven Material Uplift System)              ║
+    // ╚═══════════════════════════════════════════════════════════════╝
+
+    public static final class kFeeder {
+
+        public static final double FEED_RPM  = 500.0;
+        public static final double VOMIT_RPM = -250.0;
+
+        public static final MotorConfig BLU_CONFIG =
+            MotorConfig.builder(ControlMode.VELOCITY)
+                .inverted(true)
+                .withPID(0.11, 0.0, 0.0)
+                .withFeedforward(0.09931, 0.42, 0.0)
+                .withVoltageLimits(12.0, -12.0)
+                .withStatorCurrentLimit(Amps.of(100))
+                .withSimVelocityRps(20)
+                .build();
+
+        public static final MotorConfig YEL_CONFIG =
+            MotorConfig.builder(ControlMode.VELOCITY)
+                .inverted(false)
+                .withPID(0.11, 0.0, 0.02)
+                .withFeedforward(0.09931, 0.42, 0.0)
+                .withVoltageLimits(12.0, -12.0)
+                .withStatorCurrentLimit(Amps.of(100))
+                .withSimVelocityRps(20)
+                .build();
+    }
+
+    // ╔═══════════════════════════════════════════════════════════════╗
     // ║                       HOPPER CONSTANTS                        ║
     // ║                (Arcane Material Buffer Chamber)               ║
     // ╚═══════════════════════════════════════════════════════════════╝
@@ -115,22 +177,21 @@ public class Constants {
     public static final class kHopper {
 
         /** Hopper target positions (in degrees). */
-        public static final double RETRACTED_POS = 0.0;
-        public static final double EXTENDED_POS = 12.0;
-        public static final double SAFE_EXTENDED = 10.0;
-        public static final double MAX_POS = 12.1;
+        public static final double RETRACTED_POS      = 0.0;
+        public static final double EXTENDED_POS       = 12.0;
+        public static final double SAFE_EXTENDED      = 10.0;
+        public static final double MAX_POS            = 12.1;
         public static final double POSITION_TOLERANCE = 0.5;
 
         public static final double MANUAL_POSITIVE_POWER = -0.2;
         public static final double MANUAL_NEGATIVE_POWER = 0.2;
-        
 
         // /** Gear ratio for the hopper gearbox. */
-        // public static final GearRatio RATIO = 
+        // public static final GearRatio RATIO =
         //     GearRatio(
         //         .gearBox(20, 1)
         //         .withScaling(0.0, 46.3, 12.0));
-    
+
         /**
          * Motor rotations per degree of hopper mechanism travel.
          * Derived from hardware calibration: 0 motor rotations = 0 deg,
@@ -147,6 +208,129 @@ public class Constants {
                 .withBrake()
                 .build();
     }
+
+    // ╔═══════════════════════════════════════════════════════════════╗
+    // ║                       INTAKE CONSTANTS                        ║
+    // ╚═══════════════════════════════════════════════════════════════╝
+
+    public static final class kIntake {
+
+        public static final class kRoller {
+
+            public static final double TORQUE_LOW     = 5.0;
+            public static final double TORQUE_HIGH    = 15.0;
+            public static final double TORQUE_IDLE    = 0.5;
+            public static final double OUTTAKE_TORQUE = -10.0;
+            public static final double AUTO_TORQUE    = 10.0;
+
+            public static final MotorConfig CONFIG =
+                MotorConfig.builder(ControlMode.TORQUE)
+                    .withStatorCurrentLimit(Amps.of(20))
+                    .withSupplyCurrentLimit(Amps.of(40))
+                    .withPeakTorqueCurrent(20.0, -10.0)
+                    .withSimVelocityRps(50)
+                    .withBrake()
+                    .build();
+        }
+
+        public static final class kArm {
+
+            public static final double MAX_ANGLE_DEGREES       = 140.0;
+            public static final double MIN_ANGLE_DEGREES       = 0.0;
+            public static final double DEPLOYED_ANGLE_DEGREES  = 138.0;
+            public static final double RETRACTED_ANGLE_DEGREES = 82.0;
+            public static final double UPPER_ANGLE_DEGREES     = 67.0;
+
+            public static final double ANGLE_TOLERANCE_DEGREES = 2.0;
+            public static final double MANUAL_POSITIVE_POWER   = 0.4;
+            public static final double MANUAL_NEGATIVE_POWER   = -0.4;
+
+            public static final MotorConfig BLU_CONFIG =
+                MotorConfig.builder(ControlMode.POSITION)
+                    .inverted(false)
+                    .withPID(0.5, 0.0, 0.0)
+                    .withGravity(0.1, GravityType.COSINE)
+                    .withReverseLimit(true, true, 0.0) // enable, autoset, reset to 0.0
+                    .reverseLimitType(ReverseLimitTypeValue.NormallyOpen)
+                    .withVoltageLimits(8, -8)
+                    .withStatorCurrentLimit(Amps.of(100.0))
+                    .withSimVelocityRps(0.5)
+                    .withBrake()
+                    .build();
+
+            public static final MotorConfig YEL_CONFIG =
+                MotorConfig.builder(ControlMode.POSITION)
+                    .inverted(true)
+                    .withPID(0.5, 0.0, 0.0)
+                    .withGravity(0.1, GravityType.COSINE)
+                    .withReverseLimit(true, true, 0.0) // enable, autoset, reset to 0.0
+                    .reverseLimitType(ReverseLimitTypeValue.NormallyOpen)
+                    .withVoltageLimits(8, -8)
+                    .withStatorCurrentLimit(Amps.of(100.0))
+                    .withSimVelocityRps(0.5)
+                    .withBrake()
+                    .build();
+        }
+    }
+
+    // ============================================================
+    // QuestNav — Meta Quest headset vision configuration.
+    // ============================================================
+
+    public static final class kQuest {
+        /**
+         * Transform from robot center to the Quest's physical mounting point.
+         *
+         * <p>The Quest reports its own 3D pose at the headset, not at the robot
+         * center. This offset is applied to convert between the two:
+         * <ul>
+         *   <li>Robot center → Quest mount: apply ROBOT_TO_QUEST (forward)</li>
+         *   <li>Quest mount → Robot center: apply ROBOT_TO_QUEST.inverse()</li>
+         * </ul>
+         *
+         * <p>Measured from the 2026 field season. Re-measure if the mount changes.
+         * x = -0.202 m (behind center), y = 0.304 m (left of center),
+         * z = 0.39 m (height), yaw = 90° (headset faces robot-left).
+         */
+        public static final Transform3d ROBOT_TO_QUEST = new Transform3d(
+            -0.202, 0.304, 0.39,
+            new Rotation3d(0, 0, Math.toRadians(90))
+        );
+    }
+
+    // ============================================================
+    // Shooter — dual flywheel (BLU CAN 19, YEL CAN 17), 1:1 gear ratio.
+    // ============================================================
+
+    public static final class kShooter {
+
+        public static final double MAX_RPM       = 4000.0;
+        public static final double LOB_RPM       = 2650.0;
+        public static final double SAFE_RPM      = 2800.0;
+        public static final double IDLE_RPM      = 500.0;
+        public static final double TOLERANCE_RPM = 20.0;
+
+        public static final MotorConfig BLU_CONFIG =
+            MotorConfig.builder(ControlMode.VELOCITY)
+                .inverted(true)
+                .withPID(0.1, 0.0, 0.02)
+                .withFeedforward(0.12231, 0.32, 0.0)
+                .withVoltageLimits(12.0, -12.0)
+                .withStatorCurrentLimit(Amps.of(110))
+                .withSimVelocityRps(66.7)
+                .build();
+
+        public static final MotorConfig YEL_CONFIG =
+            MotorConfig.builder(ControlMode.VELOCITY)
+                .inverted(false)
+                .withPID(0.1, 0.0, 0.02)
+                .withFeedforward(0.12231, 0.32, 0.0)
+                .withVoltageLimits(12.0, -12.0)
+                .withStatorCurrentLimit(Amps.of(110))
+                .withSimVelocityRps(66.7)
+                .build();
+    }
+
     // ============================================================
     // Swerve Drive — kinematics, motor configs, and tuning.
     // ============================================================
@@ -308,187 +492,5 @@ public class Constants {
              */
             public static final double AIM_LEAD_TIME = 0.25;
         }
-    }
-
-    public static final class kIntake {
-        public static final class kRoller {
-            
-            public static final double TORQUE_LOW = 5.0;
-            public static final double TORQUE_HIGH = 15.0;
-            public static final double TORQUE_IDLE = 0.5;
-            public static final double OUTTAKE_TORQUE = -10.0;
-            public static final double AUTO_TORQUE = 10.0;
-            
-            public static final MotorConfig CONFIG =
-                MotorConfig.builder(ControlMode.TORQUE)
-                    .withStatorCurrentLimit(Amps.of(20))
-                    .withSupplyCurrentLimit(Amps.of(40))
-                    .withPeakTorqueCurrent(20.0, -10.0)
-                    .withSimVelocityRps(50)
-                    .withBrake()
-                    .build();
-        }
-
-        public static final class kArm {
-
-            public static final double MAX_ANGLE_DEGREES = 140.0;
-            public static final double MIN_ANGLE_DEGREES = 0.0;
-            public static final double DEPLOYED_ANGLE_DEGREES = 138.0;
-            public static final double RETRACTED_ANGLE_DEGREES = 82.0;
-            public static final double UPPER_ANGLE_DEGREES = 67.0;
-
-            public static final double ANGLE_TOLERANCE_DEGREES = 2.0;
-            public static final double MANUAL_POSITIVE_POWER = 0.4;
-            public static final double MANUAL_NEGATIVE_POWER = -0.4;
-
-            public static final MotorConfig BLU_CONFIG =
-                MotorConfig.builder(ControlMode.POSITION)
-                    .inverted(false)
-                    .withPID(0.5, 0.0, 0.0)
-                    .withGravity(0.1, GravityType.COSINE)
-                    .withReverseLimit(true, true, 0.0) // enable, autoset, reset to 0.0
-                    .reverseLimitType(ReverseLimitTypeValue.NormallyOpen)
-                    .withVoltageLimits(8, -8)
-                    .withStatorCurrentLimit(Amps.of(100.0))
-                    .withSimVelocityRps(0.5)
-                    .withBrake()
-                    .build();
-
-            public static final MotorConfig YEL_CONFIG =
-                MotorConfig.builder(ControlMode.POSITION)
-                    .inverted(true)
-                    .withPID(0.5, 0.0, 0.0)
-                    .withGravity(0.1, GravityType.COSINE)
-                    .withReverseLimit(true, true, 0.0) // enable, autoset, reset to 0.0
-                    .reverseLimitType(ReverseLimitTypeValue.NormallyOpen)
-                    .withVoltageLimits(8, -8)
-                    .withStatorCurrentLimit(Amps.of(100.0))
-                    .withSimVelocityRps(0.5)
-                    .withBrake()
-                    .build();
-
-        }
-    }
-    
-
-    // ╔═══════════════════════════════════════════════════════════════╗
-    // ║                      AGITATOR CONSTANTS                       ║
-    // ║               (Arcane Material Stirring Engine)               ║
-    // ╚═══════════════════════════════════════════════════════════════╝
-
-    public static final class kAgitator {
-
-        public static final double TORQUE_LOW = 5.0;
-        public static final double TORQUE_HIGH = 15.0;
-        public static final double TORQUE_IDLE = 0.5;
-        public static final double OUTTAKE_TORQUE = -10.0;
-        public static final double AUTO_TORQUE = 10.0;
-
-        public static final MotorConfig BLU_CONFIG =
-            MotorConfig.builder(ControlMode.TORQUE)
-                .withStatorCurrentLimit(Amps.of(20))
-                .withSupplyCurrentLimit(Amps.of(40))
-                .withPeakTorqueCurrent(20.0, -10.0)
-                .withSimVelocityRps(50)
-                .withBrake()
-                .build();
-
-        public static final MotorConfig YEL_CONFIG =
-            MotorConfig.builder(ControlMode.TORQUE)
-                .withStatorCurrentLimit(Amps.of(20))
-                .withSupplyCurrentLimit(Amps.of(40))
-                .withPeakTorqueCurrent(20.0, -10.0)
-                .withSimVelocityRps(50)
-                .withBrake()
-                .build();
-    }
-
-    // ╔═══════════════════════════════════════════════════════════════╗
-    // ║                       FEEDER CONSTANTS                        ║
-    // ║             (Mana‑Driven Material Uplift System)              ║
-    // ╚═══════════════════════════════════════════════════════════════╝
-
-    public static final class kFeeder {
-
-        public static final double FEED_RPM  = 500.0;
-        public static final double VOMIT_RPM = -250.0;
-
-        public static final MotorConfig BLU_CONFIG =
-            MotorConfig.builder(ControlMode.VELOCITY)
-                .inverted(true)
-                .withPID(0.11, 0.0, 0.0)
-                .withFeedforward(0.09931, 0.42, 0.0)
-                .withVoltageLimits(12.0, -12.0)
-                .withStatorCurrentLimit(Amps.of(100))
-                .withSimVelocityRps(20)
-                .build();
-
-        public static final MotorConfig YEL_CONFIG =
-            MotorConfig.builder(ControlMode.VELOCITY)
-                .inverted(false)
-                .withPID(0.11, 0.0, 0.02)
-                .withFeedforward(0.09931, 0.42, 0.0)
-                .withVoltageLimits(12.0, -12.0)
-                .withStatorCurrentLimit(Amps.of(100))
-                .withSimVelocityRps(20)
-                .build();
-    }
-
-    // ============================================================
-    // Shooter — dual flywheel (BLU CAN 19, YEL CAN 17), 1:1 gear ratio.
-    // ============================================================
-
-    public static final class kShooter {
-
-        public static final double MAX_RPM       = 4000.0;
-        public static final double LOB_RPM       = 2650.0;
-        public static final double SAFE_RPM      = 2800.0;
-        public static final double IDLE_RPM      = 500.0;
-        public static final double TOLERANCE_RPM = 20.0;
-
-        public static final MotorConfig BLU_CONFIG =
-            MotorConfig.builder(ControlMode.VELOCITY)
-                .inverted(true)
-                .withPID(0.1, 0.0, 0.02)
-                .withFeedforward(0.12231, 0.32, 0.0)
-                .withVoltageLimits(12.0, -12.0)
-                .withStatorCurrentLimit(Amps.of(110))
-                .withSimVelocityRps(66.7)
-                .build();
-
-        public static final MotorConfig YEL_CONFIG =
-            MotorConfig.builder(ControlMode.VELOCITY)
-                .inverted(false)
-                .withPID(0.1, 0.0, 0.02)
-                .withFeedforward(0.12231, 0.32, 0.0)
-                .withVoltageLimits(12.0, -12.0)
-                .withStatorCurrentLimit(Amps.of(110))
-                .withSimVelocityRps(66.7)
-                .build();
-    }
-
-    // ============================================================
-    // QuestNav — Meta Quest headset vision configuration.
-    // ============================================================
-
-    public static final class kQuest {
-        /**
-         * Transform from robot center to the Quest's physical mounting point.
-         *
-         * <p>The Quest reports its own 3D pose at the headset, not at the robot
-         * center. This offset is applied to convert between the two:
-         * <ul>
-         *   <li>Robot center → Quest mount: apply ROBOT_TO_QUEST (forward)</li>
-         *   <li>Quest mount → Robot center: apply ROBOT_TO_QUEST.inverse()</li>
-         * </ul>
-         *
-         * <p>Measured from the 2026 field season. Re-measure if the mount changes.
-         * x = -0.202 m (behind center), y = 0.304 m (left of center),
-         * z = 0.39 m (height), yaw = 90° (headset faces robot-left).
-         */
-        public static final Transform3d ROBOT_TO_QUEST = new Transform3d(
-            -0.202, 0.304, 0.39,
-            new Rotation3d(0, 0, Math.toRadians(90))
-        );
     }
 }
