@@ -10,22 +10,16 @@ package org.team1507.robot;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj.smartdashboard.*;
+import edu.wpi.first.wpilibj2.command.*;
+import edu.wpi.first.wpilibj2.command.button.*;
 
+import static org.team1507.robot.Constants.*;
 import org.team1507.lib.core.framework.LoggedRobot;
 import org.team1507.lib.core.vision.QuestNavSubsystem;
 import org.team1507.robot.auto.AutoBuilder;
 import org.team1507.robot.auto.nodes.Nodes;
 import org.team1507.robot.auto.routines.*;
-import org.team1507.robot.Constants.RobotMap;
-import org.team1507.robot.Constants.kQuest;
-import org.team1507.robot.Constants.kShooter;
-import org.team1507.robot.Constants.kSwerve;
 import org.team1507.robot.subsystems.*;
 
 public final class Robot extends LoggedRobot {
@@ -34,14 +28,14 @@ public final class Robot extends LoggedRobot {
     // Subsystems
     // -------------------------------------------------------------------------
 
-    public final Swerve            swerve;
-    public final QuestNavSubsystem questNav;
-    public final IntakeArm         intakeArm;
-    public final IntakeRoller      intakeRoller;
-    public final Hopper            hopper;
     public final Agitator          agitator;
     public final Feeder            feeder;
+    public final Hopper            hopper;
+    public final IntakeArm         intakeArm;
+    public final IntakeRoller      intakeRoller;
+    public final QuestNavSubsystem questNav;
     public final Shooter           shooter;
+    public final Swerve            swerve;
 
     // -------------------------------------------------------------------------
     // Controllers
@@ -64,20 +58,20 @@ public final class Robot extends LoggedRobot {
 
     public Robot() {
 
-        // Subsystems — swerve first; questNav takes method references from it.
-        swerve    = new Swerve();
-        questNav  = new QuestNavSubsystem(
+        // Swerve first — questNav takes method references from it.
+        swerve   = new Swerve();
+        questNav = new QuestNavSubsystem(
             swerve::addVisionMeasurement,
             swerve::resetPose,
             kQuest.ROBOT_TO_QUEST
         );
-        intakeArm    = new IntakeArm();
-        intakeRoller = new IntakeRoller();
-        hopper       = new Hopper();
-        intakeArm.setHopperSafeSupplier(hopper::isHopperSafeForIntake);
         agitator     = new Agitator();
         feeder       = new Feeder();
+        hopper       = new Hopper();
+        intakeArm    = new IntakeArm();
+        intakeRoller = new IntakeRoller();
         shooter      = new Shooter();
+        intakeArm.setHopperSafeSupplier(hopper::isHopperSafeForIntake);
 
         // Pre-match pose preset buttons (visible in Elastic while disabled).
         // Place the robot at the known starting position and press the matching
