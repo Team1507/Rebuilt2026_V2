@@ -32,11 +32,15 @@ import org.team1507.robot.Constants.kSwerve;
 //     Every Robot node (Pose2d) must lie within the active field boundary.
 //     Location nodes (Translation2d, used for field reference / obstacle math)
 //     are NOT checked — the robot never drives to those.
+//     Red-side flipped nodes are not checked separately: FieldFlip maps
+//     (x,y)→(16.54−x,8.21−y), so any in-bounds point always flips to an
+//     in-bounds point. nodeFlipRoundTrip confirms the math is self-consistent.
 //
 //   noRobotNodeCollidesWithObstacles
 //     No Robot node may place the robot's spin circle inside or touching a
 //     field structure. Each obstacle is defined by a CORNERS[] polygon in
-//     Nodes.FieldElements.
+//     Nodes.FieldElements. All nodes are Blue-origin; Red-side obstacles are
+//     symmetric by the same FieldFlip argument above.
 //
 // ── WHICH NODES ARE CHECKED ─────────────────────────────────────────────────
 //
@@ -232,65 +236,7 @@ class NodeBoundsTest {
     }
 
     // =========================================================================
-    // Test 3 — Red-alliance flip bounds
-    // =========================================================================
-
-    @Test
-    void flippedNodesAreWithinBounds() {
-
-        // ── Robot.Start ─────────────────────────────────────────────────────────────────────
-        check("flip(Robot.Start.RIGHT)",                                  FieldFlip.pose(Nodes.Robot.Start.RIGHT));
-        check("flip(Robot.Start.CENTER)",                                 FieldFlip.pose(Nodes.Robot.Start.CENTER));
-        check("flip(Robot.Start.LEFT)",                                   FieldFlip.pose(Nodes.Robot.Start.LEFT));
-
-        // ── Robot.Score ─────────────────────────────────────────────────────────────────────
-        check("flip(Robot.Score.RIGHT)",                                  FieldFlip.pose(Nodes.Robot.Score.RIGHT));
-        check("flip(Robot.Score.LEFT)",                                   FieldFlip.pose(Nodes.Robot.Score.LEFT));
-
-        // ── Robot.Pickup ────────────────────────────────────────────────────────────────────
-        check("flip(Robot.Pickup.APPROACH_RIGHT)",                        FieldFlip.pose(Nodes.Robot.Pickup.APPROACH_RIGHT));
-        check("flip(Robot.Pickup.STATION_RIGHT)",                         FieldFlip.pose(Nodes.Robot.Pickup.STATION_RIGHT));
-        check("flip(Robot.Pickup.APPROACH_LEFT)",                         FieldFlip.pose(Nodes.Robot.Pickup.APPROACH_LEFT));
-        check("flip(Robot.Pickup.STATION_LEFT)",                          FieldFlip.pose(Nodes.Robot.Pickup.STATION_LEFT));
-
-        // ── Robot.Waypoint ──────────────────────────────────────────────────────────────────
-        check("flip(Robot.Waypoint.MIDFIELD_RIGHT)",                      FieldFlip.pose(Nodes.Robot.Waypoint.MIDFIELD_RIGHT));
-        check("flip(Robot.Waypoint.MIDFIELD_CENTER)",                     FieldFlip.pose(Nodes.Robot.Waypoint.MIDFIELD_CENTER));
-        check("flip(Robot.Waypoint.MIDFIELD_LEFT)",                       FieldFlip.pose(Nodes.Robot.Waypoint.MIDFIELD_LEFT));
-
-        // ── Legacy.Start ────────────────────────────────────────────────────────────────────
-        check("flip(Legacy.Start.RIGHT)",                                 FieldFlip.pose(Nodes.Legacy.Start.RIGHT));
-        check("flip(Legacy.Start.LEFT)",                                  FieldFlip.pose(Nodes.Legacy.Start.LEFT));
-        check("flip(Legacy.Start.SHOOTING_SPOT_RIGHT)",                   FieldFlip.pose(Nodes.Legacy.Start.SHOOTING_SPOT_RIGHT));
-        check("flip(Legacy.Start.SHOOTING_SPOT_LEFT)",                    FieldFlip.pose(Nodes.Legacy.Start.SHOOTING_SPOT_LEFT));
-
-        // ── Legacy.Midfield ─────────────────────────────────────────────────────────────────
-        check("flip(Legacy.Midfield.RIGHT_OVER_BUMP)",                    FieldFlip.pose(Nodes.Legacy.Midfield.RIGHT_OVER_BUMP));
-        check("flip(Legacy.Midfield.RIGHT_OVER_BUMP2)",                   FieldFlip.pose(Nodes.Legacy.Midfield.RIGHT_OVER_BUMP2));
-        check("flip(Legacy.Midfield.LEFT_OVER_BUMP)",                     FieldFlip.pose(Nodes.Legacy.Midfield.LEFT_OVER_BUMP));
-        check("flip(Legacy.Midfield.RIGHT_BEFORE_BUMP)",                  FieldFlip.pose(Nodes.Legacy.Midfield.RIGHT_BEFORE_BUMP));
-        check("flip(Legacy.Midfield.LEFT_BEFORE_BUMP)",                   FieldFlip.pose(Nodes.Legacy.Midfield.LEFT_BEFORE_BUMP));
-        check("flip(Legacy.Midfield.RIGHT_TURN)",                         FieldFlip.pose(Nodes.Legacy.Midfield.RIGHT_TURN));
-        check("flip(Legacy.Midfield.RIGHT_RIGHT_SUBWAY)",                 FieldFlip.pose(Nodes.Legacy.Midfield.RIGHT_RIGHT_SUBWAY));
-        check("flip(Legacy.Midfield.LEFT_RIGHT_SUBWAY)",                  FieldFlip.pose(Nodes.Legacy.Midfield.LEFT_RIGHT_SUBWAY));
-        check("flip(Legacy.Midfield.RIGHT_RUSH_SUBWAY)",                  FieldFlip.pose(Nodes.Legacy.Midfield.RIGHT_RUSH_SUBWAY));
-        check("flip(Legacy.Midfield.LOWER_RIGHT_RIGHT_SUBWAY)",           FieldFlip.pose(Nodes.Legacy.Midfield.LOWER_RIGHT_RIGHT_SUBWAY));
-        check("flip(Legacy.Midfield.RIGHT_LEFT_SUBWAY)",                  FieldFlip.pose(Nodes.Legacy.Midfield.RIGHT_LEFT_SUBWAY));
-        check("flip(Legacy.Midfield.MIDDLE_RIGHT_SUBWAY)",                FieldFlip.pose(Nodes.Legacy.Midfield.MIDDLE_RIGHT_SUBWAY));
-        check("flip(Legacy.Midfield.LEFT_LEFT_SUBWAY)",                   FieldFlip.pose(Nodes.Legacy.Midfield.LEFT_LEFT_SUBWAY));
-        check("flip(Legacy.Midfield.LEFT_FOOTLONG_SUBWAY)",               FieldFlip.pose(Nodes.Legacy.Midfield.LEFT_FOOTLONG_SUBWAY));
-        check("flip(Legacy.Midfield.SUBWAY_AROUND_THE_HUB)",              FieldFlip.pose(Nodes.Legacy.Midfield.SUBWAY_AROUND_THE_HUB));
-
-        // ── Legacy.Hub ──────────────────────────────────────────────────────────────────────
-        check("flip(Legacy.Hub.CENTER)",                                  FieldFlip.pose(Nodes.Legacy.Hub.CENTER));
-
-        // ── Legacy.Outpost ──────────────────────────────────────────────────────────────────
-        check("flip(Legacy.Outpost.RIGHT_APPROACH_POINT)",                FieldFlip.pose(Nodes.Legacy.Outpost.RIGHT_APPROACH_POINT));
-        check("flip(Legacy.Outpost.RIGHT_APPROACH_POINT_QUEST)",          FieldFlip.pose(Nodes.Legacy.Outpost.RIGHT_APPROACH_POINT_QUEST));
-    }
-
-    // =========================================================================
-    // Test 4 — Flip round-trip (math sanity)
+    // Test 3 — Flip round-trip (math sanity)
     // =========================================================================
 
     @Test
@@ -329,27 +275,27 @@ class NodeBoundsTest {
     /**
      * Checks a single robot node against every registered field element obstacle.
      * Add one obstacle() call here for each new FieldElements structure each season.
+     *
+     * Bumps (BumpLeft, BumpRight, and their Red counterparts) are intentionally
+     * omitted — the robot drives through the subway lanes and many start/score
+     * nodes sit inside the bump footprint. Bumps are passable floor elevations,
+     * not structures the robot must avoid.
      */
     private void clearanceCheck(String name, Pose2d pose) {
         Translation2d position = pose.getTranslation();
-        obstacle(name, position, "FieldElements.Hub",       Nodes.FieldElements.Hub.CORNERS);
-
-        // Add more obstacles here after game reveal:
-        // obstacle(name, position, "FieldElements.Trench", Nodes.FieldElements.Trench.CORNERS);
+        obstacle(name, position, "FieldElements.Hub",         Nodes.FieldElements.Hub.CORNERS);
+        obstacle(name, position, "FieldElements.TrenchLeft",  Nodes.FieldElements.TrenchLeft.CORNERS);
+        obstacle(name, position, "FieldElements.TrenchRight", Nodes.FieldElements.TrenchRight.CORNERS);
+        // Bumps omitted — robot drives through subway lanes; many nodes sit inside the bump footprint
+        // Red-side obstacles computed via FieldFlip when needed in auto or future tests
     }
 
     // =========================================================================
     // Helpers
     // =========================================================================
 
-    /** Boundary check for a robot Pose2d node. */
     private void check(String name, Pose2d pose) {
         check(name, pose.getX(), pose.getY());
-    }
-
-    /** Boundary check for a Translation2d field location. */
-    private void check(String name, Translation2d point) {
-        check(name, point.getX(), point.getY());
     }
 
     private void check(String name, double x, double y) {

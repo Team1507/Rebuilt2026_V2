@@ -122,27 +122,41 @@ public final class Nodes {
     //              Works for any convex polygon — square, octagon, etc.
     //              No bounding box needed; the test derives geometry from CORNERS.
     //
-    // Corner naming: NEAR = closer to blue DS (low X), FAR = far side (high X).
-    //                LEFT/RIGHT are driver-relative (left = high Y in WPILib coords).
+    // Corner naming:
+    //   NEAR = closer to Blue DS (low X), FAR = far side (high X).
+    //   LEFT/RIGHT are driver-relative (left = high Y in WPILib coords).
+    //   INNER = hub-facing side, WALL = field boundary side (for Trench).
+    //   HUB = hub-adjacent side, TRENCH = trench-adjacent side (for Bump).
     // Winding order in CORNERS: clockwise when viewed from above (x right, y up).
     //
-    // Repopulate each season after game reveal with measured field coordinates.
+    // Source for all measurements: Team 340 field data.
+    //   BLUE_ZONE = AprilTag 26 X = 3.048 m    HUB_WIDTH = 47 in = 1.194 m
+    //   Y_CENTER  = 8.21 / 2 = 4.105 m         TRENCH_OFFSET = 96.5 in = 2.451 m
+    //   Red-side coordinates: compute at use-time via FieldFlip.translation() / FieldFlip.pose().
+    //
+    // Field cross-section (Y axis, same X range [3.048, 4.242] for all structures):
+    //   Y=8.21  ┌──────────────┐  TrenchLeft (impassable — robot too tall)
+    //   Y=6.556 ├──────────────┤
+    //           │  BumpLeft    │  Elevated floor — passable, robot crosses here
+    //   Y=4.702 ├──────────────┤
+    //   Y=3.508 │    Hub       │  Solid structure — robot cannot enter
+    //           ├──────────────┤
+    //   Y=1.654 │  BumpRight   │  Elevated floor — passable, robot crosses here
+    //   Y=0.0   ├──────────────┤
+    //           └──────────────┘  TrenchRight (impassable)
     // ─────────────────────────────────────────────────────────────────────
     public static final class FieldElements {
 
+        // ── Hub ──────────────────────────────────────────────────────────────
         public static final class Hub {
-            // 47 in × 47 in box, centered on field Y, near edge at the Blue Alliance Zone.
-            // Source: Team 340 field measurements — HUB_WIDTH = 47 in = 1.194 m,
-            //         BLUE_ZONE = AprilTag 26 X ≈ 3.048 m, Y_CENTER = 8.21 / 2 = 4.105 m.
+            // 47 in × 47 in solid box at the Blue Alliance Zone edge.
+            // HUB_NEAR = BLUE_ZONE = 3.048 m.  HUB_FAR = 3.048 + 1.194 = 4.242 m.
+            // Hub LEFT = Y_CENTER + 0.597 = 4.702 m.  RIGHT = Y_CENTER − 0.597 = 3.508 m.
             public static final Translation2d CORNER_NEAR_LEFT  = Node.location(3.048, 4.702);
             public static final Translation2d CORNER_FAR_LEFT   = Node.location(4.242, 4.702);
             public static final Translation2d CORNER_FAR_RIGHT  = Node.location(4.242, 3.508);
             public static final Translation2d CORNER_NEAR_RIGHT = Node.location(3.048, 3.508);
-
-            public static final Translation2d CENTER = Node.location(3.645, 4.105);
-
-            // Ordered clockwise from top-left. NodeBoundsTest walks these edges
-            // to check if any robot node's spin circle intersects the structure.
+            public static final Translation2d CENTER            = Node.location(3.645, 4.105);
             public static final Translation2d[] CORNERS = {
                 CORNER_NEAR_LEFT,
                 CORNER_FAR_LEFT,
@@ -151,8 +165,76 @@ public final class Nodes {
             };
         }
 
-        // Add one class per field structure after game reveal:
-        //   public static final class Trench { ... }
+        // ── Left Trench (high Y — impassable) ──────────────────────────────
+        public static final class TrenchLeft {
+            // Occupies X [3.048, 4.242], Y [6.556, 8.21] in Blue-origin coordinates.
+            // Includes the solid trench base (12 in wide) and the open corridor to the
+            // field wall. Both sections are impassable — the robot is too tall.
+            // INNER = hub-facing edge at Y_CENTER + 96.5 in = 6.556 m.
+            // WALL  = field boundary at Y = 8.21 m.
+            public static final Translation2d CORNER_NEAR_WALL  = Node.location(3.048, 8.210);
+            public static final Translation2d CORNER_FAR_WALL   = Node.location(4.242, 8.210);
+            public static final Translation2d CORNER_FAR_INNER  = Node.location(4.242, 6.556);
+            public static final Translation2d CORNER_NEAR_INNER = Node.location(3.048, 6.556);
+            public static final Translation2d[] CORNERS = {
+                CORNER_NEAR_WALL,
+                CORNER_FAR_WALL,
+                CORNER_FAR_INNER,
+                CORNER_NEAR_INNER,
+            };
+        }
+
+        // ── Right Trench (low Y — impassable) ───────────────────────────────
+        public static final class TrenchRight {
+            // Occupies X [3.048, 4.242], Y [0.0, 1.654] in Blue-origin coordinates.
+            // INNER = hub-facing edge at Y_CENTER − 96.5 in = 1.654 m.
+            // WALL  = field boundary at Y = 0.0 m.
+            public static final Translation2d CORNER_NEAR_INNER = Node.location(3.048, 1.654);
+            public static final Translation2d CORNER_FAR_INNER  = Node.location(4.242, 1.654);
+            public static final Translation2d CORNER_FAR_WALL   = Node.location(4.242, 0.000);
+            public static final Translation2d CORNER_NEAR_WALL  = Node.location(3.048, 0.000);
+            public static final Translation2d[] CORNERS = {
+                CORNER_NEAR_INNER,
+                CORNER_FAR_INNER,
+                CORNER_FAR_WALL,
+                CORNER_NEAR_WALL,
+            };
+        }
+
+        // ── Left Bump (high Y subway lane — passable) ────────────────────────
+        public static final class BumpLeft {
+            // Elevated floor between the Hub's left wall and the Left Trench inner edge.
+            // Occupies X [3.048, 4.242], Y [4.702, 6.556] in Blue-origin coordinates.
+            // The robot CAN drive through here (this is the subway lane). Not an obstacle.
+            // Defined for RRT cost functions (bump-perpendicular-crossing preference)
+            // and field visualization. Not used in NodeBoundsTest collision checks.
+            public static final Translation2d CORNER_NEAR_TRENCH = Node.location(3.048, 6.556);
+            public static final Translation2d CORNER_FAR_TRENCH  = Node.location(4.242, 6.556);
+            public static final Translation2d CORNER_FAR_HUB     = Node.location(4.242, 4.702);
+            public static final Translation2d CORNER_NEAR_HUB    = Node.location(3.048, 4.702);
+            public static final Translation2d[] CORNERS = {
+                CORNER_NEAR_TRENCH,
+                CORNER_FAR_TRENCH,
+                CORNER_FAR_HUB,
+                CORNER_NEAR_HUB,
+            };
+        }
+
+        // ── Right Bump (low Y subway lane — passable) ───────────────────────
+        public static final class BumpRight {
+            // Elevated floor between the Right Trench inner edge and the Hub's right wall.
+            // Occupies X [3.048, 4.242], Y [1.654, 3.508] in Blue-origin coordinates.
+            public static final Translation2d CORNER_NEAR_HUB    = Node.location(3.048, 3.508);
+            public static final Translation2d CORNER_FAR_HUB     = Node.location(4.242, 3.508);
+            public static final Translation2d CORNER_FAR_TRENCH  = Node.location(4.242, 1.654);
+            public static final Translation2d CORNER_NEAR_TRENCH = Node.location(3.048, 1.654);
+            public static final Translation2d[] CORNERS = {
+                CORNER_NEAR_HUB,
+                CORNER_FAR_HUB,
+                CORNER_FAR_TRENCH,
+                CORNER_NEAR_TRENCH,
+            };
+        }
     }
 
     // ─────────────────────────────────────────────────────────────────────
