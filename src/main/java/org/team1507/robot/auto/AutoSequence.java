@@ -51,6 +51,10 @@ public final class AutoSequence {
     private Double nextSpeedOverride   = null;
     private Double nextAngularOverride = null;
 
+    // When true, build() wraps every root step with per-step timing telemetry.
+    // Set via .withDebug(). Off by default — no NT overhead in production.
+    private boolean debugEnabled = false;
+
     // Autonomous match timer — started with .startTimer(), read by .waitUntilTime() etc.
     // Passed into branch sub-sequences so timer-gated steps (shootUntil, waitUntilTime)
     // read the same running clock as the root sequence.
@@ -72,6 +76,39 @@ public final class AutoSequence {
     /** Package-private: shares the root sequence's timer with a branch sub-sequence. */
     AutoSequence(Timer sharedTimer) {
         this.autoTimer = sharedTimer;
+    }
+
+
+    // =========================================================================
+    // DEBUG / NAMING
+    // =========================================================================
+
+    /**
+     * Enables per-step timing telemetry for this sequence.
+     * Without this call, build() produces no NetworkTables output (zero overhead).
+     *
+     * Place anywhere in the chain — it takes effect when build() is called:
+     *   new AutoSequence().withDebug().startTimer().resetPose(start)...build();
+     */
+    public AutoSequence withDebug() {
+        this.debugEnabled = true;
+        return this;
+    }
+
+    /**
+     * Overrides the telemetry name of the most recently added step.
+     * Chain immediately after any step method:
+     *
+     *   .moveThroughBy(bumpAlliance, 0.2, 99.0).withName("Cross bump alliance side")
+     *   .moveThroughBy(bumpNeutral,  0.2, 99.0).withName("Cross bump neutral side")
+     *
+     * Has no effect if debug is not enabled.
+     */
+    public AutoSequence withName(String name) {
+        if (!steps.isEmpty()) {
+            steps.get(steps.size() - 1).setName(name);
+        }
+        return this;
     }
 
 
@@ -189,7 +226,7 @@ public final class AutoSequence {
         steps.add(Commands.race(
             AutoBuilder.swerve.driveToPoint(Alliance.isRed() ? FieldFlip.pose(goal) : goal, speed, true),
             Commands.waitUntil(() -> autoTimer.get() >= cutoffSeconds)
-        ));
+        ).withName("driveToBy"));
         return this;
     }
 
@@ -200,14 +237,15 @@ public final class AutoSequence {
         steps.add(Commands.race(
             AutoBuilder.swerve.moveThroughPose(Alliance.isRed() ? FieldFlip.pose(waypoint) : waypoint, speed, angular, passRadius),
             Commands.waitUntil(() -> autoTimer.get() >= cutoffSeconds)
-        ));
+        ).withName("moveThroughBy"));
         return this;
     }
 
     /** Follows a PathPlanner path file to completion. Path files live in deploy/pathplanner/paths/. */
     public AutoSequence drivePath(String pathName) {
         try {
-            steps.add(com.pathplanner.lib.auto.AutoBuilder.followPath(PathPlannerPath.fromPathFile(pathName)));
+            steps.add(com.pathplanner.lib.auto.AutoBuilder.followPath(PathPlannerPath.fromPathFile(pathName))
+                .withName("drivePath_" + pathName));
         } catch (Exception e) {
             throw new RuntimeException("Failed to load PathPlanner path: " + pathName, e);
         }
@@ -220,7 +258,7 @@ public final class AutoSequence {
             steps.add(Commands.race(
                 com.pathplanner.lib.auto.AutoBuilder.followPath(PathPlannerPath.fromPathFile(pathName)),
                 Commands.waitUntil(() -> autoTimer.get() >= cutoffSeconds)
-            ));
+            ).withName("drivePathBy_" + pathName));
         } catch (Exception e) {
             throw new RuntimeException("Failed to load PathPlanner path: " + pathName, e);
         }
@@ -303,7 +341,7 @@ public final class AutoSequence {
         steps.add(Commands.parallel(
             AutoBuilder.intakeArm.retractCommand(),
             AutoBuilder.intakeRoller.stopCommand()
-        ));
+        ).withName("intakeRetract"));
         return this;
     }
 
@@ -320,7 +358,7 @@ public final class AutoSequence {
             RobotBehaviors.shootFixedRPM(
                 AutoBuilder.shooter, AutoBuilder.feeder, AutoBuilder.agitator,
                 Constants.kShooter.SAFE_RPM)
-        ));
+        ).withName("shootUntil"));
         return this;
     }
 
@@ -330,7 +368,7 @@ public final class AutoSequence {
             endAtTime(matchTimeSeconds),
             RobotBehaviors.shootFixedRPM(
                 AutoBuilder.shooter, AutoBuilder.feeder, AutoBuilder.agitator, rpm)
-        ));
+        ).withName("shootRPMUntil"));
         return this;
     }
 
@@ -390,9 +428,9 @@ public final class AutoSequence {
         for (Branch branch : branches) {
             AutoSequence sub = new AutoSequence(this.autoTimer);
             branch.build(sub);
-            commands.add(sub.build());
+            commands.add(sub.buildRaw());
         }
-        steps.add(Commands.parallel(commands.toArray(Command[]::new)));
+        steps.add(Commands.parallel(commands.toArray(Command[]::new)).withName("parallel"));
         return this;
     }
 
@@ -413,9 +451,9 @@ public final class AutoSequence {
         for (Branch branch : branches) {
             AutoSequence sub = new AutoSequence(this.autoTimer);
             branch.build(sub);
-            commands.add(sub.build());
+            commands.add(sub.buildRaw());
         }
-        steps.add(Commands.race(commands.toArray(Command[]::new)));
+        steps.add(Commands.race(commands.toArray(Command[]::new)).withName("race"));
         return this;
     }
 
@@ -440,13 +478,13 @@ public final class AutoSequence {
         for (Branch branch : others) {
             AutoSequence sub = new AutoSequence(this.autoTimer);
             branch.build(sub);
-            otherCommands.add(sub.build());
+            otherCommands.add(sub.buildRaw());
         }
 
         steps.add(Commands.deadline(
-            deadlineSeq.build(),
+            deadlineSeq.buildRaw(),
             otherCommands.toArray(Command[]::new)
-        ));
+        ).withName("deadline"));
         return this;
     }
 
@@ -467,7 +505,7 @@ public final class AutoSequence {
         steps.add(Commands.runOnce(() -> {
             autoTimer.reset();
             autoTimer.start();
-        }));
+        }).withName("startTimer"));
         return this;
     }
 
@@ -476,7 +514,7 @@ public final class AutoSequence {
      * Useful for precisely aligning actions to the match clock.
      */
     public AutoSequence waitUntilTime(double matchTimeSeconds) {
-        steps.add(Commands.waitUntil(() -> autoTimer.get() >= matchTimeSeconds));
+        steps.add(Commands.waitUntil(() -> autoTimer.get() >= matchTimeSeconds).withName("waitUntilTime"));
         return this;
     }
 
@@ -502,7 +540,7 @@ public final class AutoSequence {
 
     /** Waits a fixed number of seconds before proceeding to the next step. */
     public AutoSequence waitSeconds(double seconds) {
-        steps.add(Commands.waitSeconds(seconds));
+        steps.add(Commands.waitSeconds(seconds).withName("waitSeconds"));
         return this;
     }
 
@@ -511,7 +549,7 @@ public final class AutoSequence {
      * Use with method references: .waitUntil(mySubsystem::isReady)
      */
     public AutoSequence waitUntil(BooleanSupplier condition) {
-        steps.add(Commands.waitUntil(condition));
+        steps.add(Commands.waitUntil(condition).withName("waitUntil"));
         return this;
     }
 
@@ -533,10 +571,22 @@ public final class AutoSequence {
     // =========================================================================
 
     /**
+     * Builds the branch command sequence with NO per-step timing wrapper.
+     * Used internally by parallel/race/deadline so only the root build() logs timing.
+     */
+    Command buildRaw() {
+        return Commands.sequence(steps.toArray(Command[]::new));
+    }
+
+    /**
      * Builds the final autonomous Command.
      * Call this at the END of every routine's build() method.
+     * Per-step telemetry is only active when .withDebug() was called.
      */
     public Command build() {
+        if (!debugEnabled) {
+            return buildRaw();
+        }
         Command[] timedSteps = new Command[steps.size()];
         for (int i = 0; i < steps.size(); i++) {
             final Command step = steps.get(i);

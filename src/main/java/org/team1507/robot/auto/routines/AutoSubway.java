@@ -17,9 +17,6 @@ import org.team1507.robot.auto.nodes.Nodes;
 
 // AutoSubway — drives through the bump crossing into the neutral-zone subway,
 // sweeps for fuel with the intake deployed, then returns to score.
-//
-// Timing cutoffs are set to 99.0 s (effectively unlimited) until real cycle
-// times are recorded from the Auto/Step*/Duration telemetry keys and tuned.
 public final class AutoSubway {
 
     public enum Side { LEFT, RIGHT }
@@ -42,22 +39,23 @@ public final class AutoSubway {
         Pose2d bumpNeutral  = left ? Nodes.Robot.Waypoint.BUMP_NEUTRAL  : mirrorY(Nodes.Robot.Waypoint.BUMP_NEUTRAL);
 
         return new AutoSequence()
+            .withDebug()
             .startTimer()
             .resetPose(start)
-            .moveThroughBy(bumpAlliance,  0.2, 99.0)   // outbound: cross bump, alliance side
-            .moveThroughBy(bumpNeutral,   0.2, 99.0)   // outbound: cross bump, neutral side
-            .moveThroughBy(pickupStart,   0.2, 99.0)   // enter subway corridor
+            .moveThroughBy(bumpAlliance,  0.2,  1.6).withName("Outbound: alliance side of bump")
+            .moveThroughBy(bumpNeutral,   0.2,  2.1).withName("Outbound: neutral side of bump")
+            .moveThroughBy(pickupStart,   0.2,  2.7).withName("Outbound: enter subway")
             .deadline(
-                seq -> seq.driveToBy(pickupEnd, 99.0), // sweep through subway (deadline)
-                seq -> seq.intakeDeploy()               // intake runs alongside
+                seq -> seq.driveToBy(pickupEnd, 99.0),
+                seq -> seq.intakeDeploy()
             )
             .parallel(
                 seq -> seq.intakeRetract(),
-                seq -> seq.moveThroughBy(bumpNeutral,  0.2, 99.0)  // return: cross bump, neutral side
+                seq -> seq.moveThroughBy(bumpNeutral, 0.2, 99.0)
             )
-            .moveThroughBy(bumpAlliance, 0.2, 99.0)    // return: cross bump, alliance side
-            .driveToBy(score, 99.0)                     // drive to score position
-            .pointToTarget(hubTarget)                   // face hub
+            .moveThroughBy(bumpAlliance,  0.2,  5.0).withName("Return: alliance side of bump")
+            .driveToBy(score,                              5.9).withName("Return: drive to score")
+            .pointToTarget(hubTarget)
             .shootUntil(19.99)
             .stop()
             .build();
