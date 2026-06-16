@@ -102,6 +102,8 @@ public final class Robot extends LoggedRobot {
         autoChooser.addOption("Subway 18-inch Left",           AutoSubway18InchLeftBlue::build);
         autoChooser.addOption("Double Subway",                 AutoDoubleSubway::build);
         autoChooser.addOption("Subway Around The Hub",         AutoSubwayAroundTheHub::build);
+        autoChooser.addOption("Subway Left",  () -> AutoSubway.build(AutoSubway.Side.LEFT));
+        autoChooser.addOption("Subway Right", () -> AutoSubway.build(AutoSubway.Side.RIGHT));
         SmartDashboard.putData("Auto Mode", autoChooser);
 
         // Controllers and bindings — bottomDriver = port 0 (driver), topDriver = port 1 (operator)

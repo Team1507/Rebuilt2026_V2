@@ -8,6 +8,11 @@
 
 package org.team1507.robot.auto;
 
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+
+import org.team1507.lib.core.util.Alliance;
 import org.team1507.robot.subsystems.*;
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -58,6 +63,27 @@ public final class AutoBuilder {
             Feeder feeder,
             Shooter shooter) {
         AutoBuilder.swerve = swerve;
+
+        // Configure PathPlanner once. Uses fully-qualified class name to avoid conflict
+        // with this class (both are named AutoBuilder in different packages).
+        try {
+            com.pathplanner.lib.auto.AutoBuilder.configure(
+                swerve::getPose,
+                swerve::resetPose,
+                swerve::getChassisSpeeds,
+                (speeds, feedforwards) -> swerve.driveRobotRelative(speeds),
+                new PPHolonomicDriveController(
+                    new PIDConstants(5.0, 0.0, 0.0),  // translation PID — tune in sim
+                    new PIDConstants(5.0, 0.0, 0.0)   // rotation PID — tune in sim
+                ),
+                RobotConfig.fromGUISettings(),
+                () -> Alliance.isRed(),
+                swerve
+            );
+        } catch (Exception e) {
+            throw new RuntimeException("PathPlanner AutoBuilder.configure() failed — check deploy/pathplanner/settings.json", e);
+        }
+
         AutoBuilder.intakeArm = intakeArm;
         AutoBuilder.intakeRoller = intakeRoller;
         AutoBuilder.hopper = hopper;

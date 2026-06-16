@@ -928,4 +928,17 @@ public final class Swerve extends Subsystem1507 {
             .finallyDo(interrupted -> stop())
             .withName("Swerve.brake");
     }
+
+    /**
+     * Drives the robot along a time-based RRT path.
+     *
+     * At every loop cycle the command interpolates where the robot <em>should</em> be
+     * at the current elapsed time and drives toward that position with a proportional
+     * feedforward controller. If the robot is bumped off-path it catches up to the
+     * scheduled position rather than backtracking, preserving the time budget.
+     *
+     * <p>Finishes when elapsed ≥ totalDuration AND the robot is within
+     * {@link kTuning#ARRIVE_THRESHOLD} of the goal, or 2 s after the scheduled end
+     * (stall guard).
+     */
 }

@@ -15,11 +15,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 
+import com.pathplanner.lib.path.PathPlannerPath;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 
+import org.team1507.lib.core.logging.Telemetry;
 import org.team1507.lib.core.util.Alliance;
 import org.team1507.robot.Constants;
 import org.team1507.robot.RobotBehaviors;
@@ -177,6 +180,50 @@ public final class AutoSequence {
         double angular = consumeAngular();
         double speed   = consumeSpeed();
         steps.add(AutoBuilder.swerve.moveThroughPose(Alliance.isRed() ? FieldFlip.pose(waypoint) : waypoint, speed, angular, passRadius));
+        return this;
+    }
+
+    /** Drives to a field pose, but cancels if autoTimer passes cutoffSeconds. Whichever comes first ends the step. */
+    public AutoSequence driveToBy(Pose2d goal, double cutoffSeconds) {
+        double speed = consumeSpeed();
+        steps.add(Commands.race(
+            AutoBuilder.swerve.driveToPoint(Alliance.isRed() ? FieldFlip.pose(goal) : goal, speed, true),
+            Commands.waitUntil(() -> autoTimer.get() >= cutoffSeconds)
+        ));
+        return this;
+    }
+
+    /** Passes through a waypoint, but cancels if autoTimer passes cutoffSeconds. Whichever comes first ends the step. */
+    public AutoSequence moveThroughBy(Pose2d waypoint, double passRadius, double cutoffSeconds) {
+        double angular = consumeAngular();
+        double speed   = consumeSpeed();
+        steps.add(Commands.race(
+            AutoBuilder.swerve.moveThroughPose(Alliance.isRed() ? FieldFlip.pose(waypoint) : waypoint, speed, angular, passRadius),
+            Commands.waitUntil(() -> autoTimer.get() >= cutoffSeconds)
+        ));
+        return this;
+    }
+
+    /** Follows a PathPlanner path file to completion. Path files live in deploy/pathplanner/paths/. */
+    public AutoSequence drivePath(String pathName) {
+        try {
+            steps.add(com.pathplanner.lib.auto.AutoBuilder.followPath(PathPlannerPath.fromPathFile(pathName)));
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to load PathPlanner path: " + pathName, e);
+        }
+        return this;
+    }
+
+    /** Follows a PathPlanner path, but cancels if autoTimer passes cutoffSeconds. Whichever comes first ends the step. */
+    public AutoSequence drivePathBy(String pathName, double cutoffSeconds) {
+        try {
+            steps.add(Commands.race(
+                com.pathplanner.lib.auto.AutoBuilder.followPath(PathPlannerPath.fromPathFile(pathName)),
+                Commands.waitUntil(() -> autoTimer.get() >= cutoffSeconds)
+            ));
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to load PathPlanner path: " + pathName, e);
+        }
         return this;
     }
 
@@ -490,7 +537,29 @@ public final class AutoSequence {
      * Call this at the END of every routine's build() method.
      */
     public Command build() {
-        return Commands.sequence(steps.toArray(Command[]::new));
+        Command[] timedSteps = new Command[steps.size()];
+        for (int i = 0; i < steps.size(); i++) {
+            final Command step = steps.get(i);
+            final String key   = String.format("Auto/Step%02d_%s", i, sanitize(step.getName()));
+            final double[] t   = { 0.0 };
+            timedSteps[i] = step
+                .beforeStarting(() -> {
+                    t[0] = autoTimer.get();
+                    Telemetry.set(key + "/Active",    true);
+                    Telemetry.set(key + "/StartTime", t[0]);
+                })
+                .finallyDo(interrupted -> {
+                    double dur = autoTimer.get() - t[0];
+                    Telemetry.set(key + "/Active",      false);
+                    Telemetry.set(key + "/Duration",    dur);
+                    Telemetry.set(key + "/Interrupted", interrupted);
+                });
+        }
+        return Commands.sequence(timedSteps);
+    }
+
+    private static String sanitize(String name) {
+        return name.replaceAll("[^A-Za-z0-9_]", "_");
     }
 
 

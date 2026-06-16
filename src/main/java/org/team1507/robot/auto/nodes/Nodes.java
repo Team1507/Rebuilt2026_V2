@@ -65,11 +65,18 @@ public final class Nodes {
 
         // Pickup poses — APPROACH is 1 m out from the station wall,
         // STATION is the final docked position against the wall.
+        // START/END are the entry and exit of the neutral-zone subway sweep (Left side).
+        // For Right side, the auto routine applies a Y-mirror: y → 8.21−y, heading → −heading.
         public static final class Pickup {
             public static final Pose2d APPROACH_RIGHT = Node.at(0.9, 0.70, 180.0);
             public static final Pose2d STATION_RIGHT  = Node.at(0.5, 0.70, 180.0);
             public static final Pose2d APPROACH_LEFT  = Node.at(0.9, 7.12, 180.0);
             public static final Pose2d STATION_LEFT   = Node.at(0.5, 7.51, 180.0);
+
+            // Subway sweep intent nodes — Left side (high Y). Validate on-field before competition.
+            // Derived from Legacy.Midfield.LEFT_LEFT_SUBWAY and RIGHT_LEFT_SUBWAY.
+            public static final Pose2d START = Node.at(7.40, 7.00, 270.0); // left subway entry
+            public static final Pose2d END   = Node.at(7.95, 2.50, 270.0); // sweep exit toward center
         }
 
         // Waypoints — intermediate navigation poses used when routing across
@@ -78,6 +85,22 @@ public final class Nodes {
             public static final Pose2d MIDFIELD_RIGHT  = Node.at(8.27, 2.0, 0.0);
             public static final Pose2d MIDFIELD_CENTER = Node.at(8.27, 4.1, 0.0);
             public static final Pose2d MIDFIELD_LEFT   = Node.at(8.27, 6.2, 0.0);
+
+            // Bump crossing waypoint on the neutral side. X=5.5 is just past the hub far edge
+            // (X=5.223). Y=5.6 centers the robot in the BumpLeft corridor [4.632, 6.556].
+            // For Right side, auto routines apply a Y-mirror: (5.5, 8.21 − 5.6) = (5.5, 2.61).
+            public static final Pose2d BUMP_CROSS_LEFT = Node.at(5.5, 5.6, 45.0);
+
+            // Alliance-zone approach node for bump crossing. X=3.7 is just before the hub
+            // near edge (X=4.029). Y=5.6 centers the robot in the BumpLeft corridor [4.632,
+            // 6.556] — above the Hub wall and below the TrenchLeft wall.
+            // FieldFlip handles the Red-side mirror at use-time; no separate RIGHT node needed.
+            public static final Pose2d BUMP_ALLIANCE = Node.at(3.7, 5.6, 0.0);
+
+            // Neutral-zone exit node for bump crossing. X=5.4 is just past the hub far edge
+            // (X=5.223). Same Y=5.6 for a straight crossing.
+            // FieldFlip handles the Red-side mirror at use-time; no separate RIGHT node needed.
+            public static final Pose2d BUMP_NEUTRAL  = Node.at(5.4, 5.6, 0.0);
         }
     }
 
@@ -129,17 +152,18 @@ public final class Nodes {
     //   HUB = hub-adjacent side, TRENCH = trench-adjacent side (for Bump).
     // Winding order in CORNERS: clockwise when viewed from above (x right, y up).
     //
-    // Source for all measurements: Team 340 field data.
-    //   BLUE_ZONE = AprilTag 26 X = 3.048 m    HUB_WIDTH = 47 in = 1.194 m
-    //   Y_CENTER  = 8.21 / 2 = 4.105 m         TRENCH_OFFSET = 96.5 in = 2.451 m
+    // Hub position measured from AdvantageScope field data: center = (182.11 in, 158.84 in) = (4.626, 4.035) m.
+    //   HUB_WIDTH = 47 in = 1.194 m (half = 0.597 m). Hub X: [4.029, 5.223]. Hub Y: [3.438, 4.632].
+    //   TRENCH_OFFSET = 96.5 in = 2.451 m from field center Y (4.105). TrenchLeft inner = 6.556. TrenchRight inner = 1.654.
     //   Red-side coordinates: compute at use-time via FieldFlip.translation() / FieldFlip.pose().
     //
-    // Field cross-section (Y axis, same X range [3.048, 4.242] for all structures):
+    // Field cross-section (Y axis, same X range [4.029, 5.223] for all structures):
+    // Hub center measured from AdvantageScope field data: 182.11 in × 158.84 in = (4.626, 4.035) m.
     //   Y=8.21  ┌──────────────┐  TrenchLeft (impassable — robot too tall)
     //   Y=6.556 ├──────────────┤
     //           │  BumpLeft    │  Elevated floor — passable, robot crosses here
-    //   Y=4.702 ├──────────────┤
-    //   Y=3.508 │    Hub       │  Solid structure — robot cannot enter
+    //   Y=4.632 ├──────────────┤
+    //   Y=3.438 │    Hub       │  Solid structure — robot cannot enter
     //           ├──────────────┤
     //   Y=1.654 │  BumpRight   │  Elevated floor — passable, robot crosses here
     //   Y=0.0   ├──────────────┤
@@ -149,14 +173,15 @@ public final class Nodes {
 
         // ── Hub ──────────────────────────────────────────────────────────────
         public static final class Hub {
-            // 47 in × 47 in solid box at the Blue Alliance Zone edge.
-            // HUB_NEAR = BLUE_ZONE = 3.048 m.  HUB_FAR = 3.048 + 1.194 = 4.242 m.
-            // Hub LEFT = Y_CENTER + 0.597 = 4.702 m.  RIGHT = Y_CENTER − 0.597 = 3.508 m.
-            public static final Translation2d CORNER_NEAR_LEFT  = Node.location(3.048, 4.702);
-            public static final Translation2d CORNER_FAR_LEFT   = Node.location(4.242, 4.702);
-            public static final Translation2d CORNER_FAR_RIGHT  = Node.location(4.242, 3.508);
-            public static final Translation2d CORNER_NEAR_RIGHT = Node.location(3.048, 3.508);
-            public static final Translation2d CENTER            = Node.location(3.645, 4.105);
+            // 47 in × 47 in solid box. Measured from AdvantageScope field data:
+            // center = (182.11 in, 158.84 in) = (4.626, 4.035) m. Half-width = 23.5 in = 0.597 m.
+            // NEAR_X = 4.626 − 0.597 = 4.029.  FAR_X = 4.626 + 0.597 = 5.223.
+            // LEFT_Y = 4.035 + 0.597 = 4.632.  RIGHT_Y = 4.035 − 0.597 = 3.438.
+            public static final Translation2d CORNER_NEAR_LEFT  = Node.location(4.029, 4.632);
+            public static final Translation2d CORNER_FAR_LEFT   = Node.location(5.223, 4.632);
+            public static final Translation2d CORNER_FAR_RIGHT  = Node.location(5.223, 3.438);
+            public static final Translation2d CORNER_NEAR_RIGHT = Node.location(4.029, 3.438);
+            public static final Translation2d CENTER            = Node.location(4.626, 4.035);
             public static final Translation2d[] CORNERS = {
                 CORNER_NEAR_LEFT,
                 CORNER_FAR_LEFT,
@@ -167,15 +192,15 @@ public final class Nodes {
 
         // ── Left Trench (high Y — impassable) ──────────────────────────────
         public static final class TrenchLeft {
-            // Occupies X [3.048, 4.242], Y [6.556, 8.21] in Blue-origin coordinates.
+            // Occupies X [4.029, 5.223], Y [6.556, 8.21] in Blue-origin coordinates.
             // Includes the solid trench base (12 in wide) and the open corridor to the
             // field wall. Both sections are impassable — the robot is too tall.
-            // INNER = hub-facing edge at Y_CENTER + 96.5 in = 6.556 m.
+            // INNER = hub-facing edge at field_center_Y + 96.5 in = 4.105 + 2.451 = 6.556 m.
             // WALL  = field boundary at Y = 8.21 m.
-            public static final Translation2d CORNER_NEAR_WALL  = Node.location(3.048, 8.210);
-            public static final Translation2d CORNER_FAR_WALL   = Node.location(4.242, 8.210);
-            public static final Translation2d CORNER_FAR_INNER  = Node.location(4.242, 6.556);
-            public static final Translation2d CORNER_NEAR_INNER = Node.location(3.048, 6.556);
+            public static final Translation2d CORNER_NEAR_WALL  = Node.location(4.029, 8.210);
+            public static final Translation2d CORNER_FAR_WALL   = Node.location(5.223, 8.210);
+            public static final Translation2d CORNER_FAR_INNER  = Node.location(5.223, 6.556);
+            public static final Translation2d CORNER_NEAR_INNER = Node.location(4.029, 6.556);
             public static final Translation2d[] CORNERS = {
                 CORNER_NEAR_WALL,
                 CORNER_FAR_WALL,
@@ -186,13 +211,13 @@ public final class Nodes {
 
         // ── Right Trench (low Y — impassable) ───────────────────────────────
         public static final class TrenchRight {
-            // Occupies X [3.048, 4.242], Y [0.0, 1.654] in Blue-origin coordinates.
-            // INNER = hub-facing edge at Y_CENTER − 96.5 in = 1.654 m.
+            // Occupies X [4.029, 5.223], Y [0.0, 1.654] in Blue-origin coordinates.
+            // INNER = hub-facing edge at field_center_Y − 96.5 in = 4.105 − 2.451 = 1.654 m.
             // WALL  = field boundary at Y = 0.0 m.
-            public static final Translation2d CORNER_NEAR_INNER = Node.location(3.048, 1.654);
-            public static final Translation2d CORNER_FAR_INNER  = Node.location(4.242, 1.654);
-            public static final Translation2d CORNER_FAR_WALL   = Node.location(4.242, 0.000);
-            public static final Translation2d CORNER_NEAR_WALL  = Node.location(3.048, 0.000);
+            public static final Translation2d CORNER_NEAR_INNER = Node.location(4.029, 1.654);
+            public static final Translation2d CORNER_FAR_INNER  = Node.location(5.223, 1.654);
+            public static final Translation2d CORNER_FAR_WALL   = Node.location(5.223, 0.000);
+            public static final Translation2d CORNER_NEAR_WALL  = Node.location(4.029, 0.000);
             public static final Translation2d[] CORNERS = {
                 CORNER_NEAR_INNER,
                 CORNER_FAR_INNER,
@@ -204,14 +229,13 @@ public final class Nodes {
         // ── Left Bump (high Y subway lane — passable) ────────────────────────
         public static final class BumpLeft {
             // Elevated floor between the Hub's left wall and the Left Trench inner edge.
-            // Occupies X [3.048, 4.242], Y [4.702, 6.556] in Blue-origin coordinates.
+            // Occupies X [4.029, 5.223], Y [4.632, 6.556] in Blue-origin coordinates.
             // The robot CAN drive through here (this is the subway lane). Not an obstacle.
-            // Defined for RRT cost functions (bump-perpendicular-crossing preference)
-            // and field visualization. Not used in NodeBoundsTest collision checks.
-            public static final Translation2d CORNER_NEAR_TRENCH = Node.location(3.048, 6.556);
-            public static final Translation2d CORNER_FAR_TRENCH  = Node.location(4.242, 6.556);
-            public static final Translation2d CORNER_FAR_HUB     = Node.location(4.242, 4.702);
-            public static final Translation2d CORNER_NEAR_HUB    = Node.location(3.048, 4.702);
+            // Used for field visualization. Not used in NodeBoundsTest collision checks.
+            public static final Translation2d CORNER_NEAR_TRENCH = Node.location(4.029, 6.556);
+            public static final Translation2d CORNER_FAR_TRENCH  = Node.location(5.223, 6.556);
+            public static final Translation2d CORNER_FAR_HUB     = Node.location(5.223, 4.632);
+            public static final Translation2d CORNER_NEAR_HUB    = Node.location(4.029, 4.632);
             public static final Translation2d[] CORNERS = {
                 CORNER_NEAR_TRENCH,
                 CORNER_FAR_TRENCH,
@@ -223,11 +247,11 @@ public final class Nodes {
         // ── Right Bump (low Y subway lane — passable) ───────────────────────
         public static final class BumpRight {
             // Elevated floor between the Right Trench inner edge and the Hub's right wall.
-            // Occupies X [3.048, 4.242], Y [1.654, 3.508] in Blue-origin coordinates.
-            public static final Translation2d CORNER_NEAR_HUB    = Node.location(3.048, 3.508);
-            public static final Translation2d CORNER_FAR_HUB     = Node.location(4.242, 3.508);
-            public static final Translation2d CORNER_FAR_TRENCH  = Node.location(4.242, 1.654);
-            public static final Translation2d CORNER_NEAR_TRENCH = Node.location(3.048, 1.654);
+            // Occupies X [4.029, 5.223], Y [1.654, 3.438] in Blue-origin coordinates.
+            public static final Translation2d CORNER_NEAR_HUB    = Node.location(4.029, 3.438);
+            public static final Translation2d CORNER_FAR_HUB     = Node.location(5.223, 3.438);
+            public static final Translation2d CORNER_FAR_TRENCH  = Node.location(5.223, 1.654);
+            public static final Translation2d CORNER_NEAR_TRENCH = Node.location(4.029, 1.654);
             public static final Translation2d[] CORNERS = {
                 CORNER_NEAR_HUB,
                 CORNER_FAR_HUB,
@@ -282,9 +306,11 @@ public final class Nodes {
             public static final Pose2d SUBWAY_AROUND_THE_HUB   = Node.at(2.00, 5.00, 270.0);
         }
 
-        // Hub center — used as a rotation target for pointing the robot toward the scoring hub
+        // Hub center — rotation target only. The robot faces this point to aim at the hub;
+        // it never drives here. Updated to match FieldElements.Hub.CENTER measured coordinates.
+        // NodeBoundsTest intentionally excludes this from collision checks for this reason.
         public static final class Hub {
-            public static final Pose2d CENTER = Node.at(4.8, 4.03, 0.0);
+            public static final Pose2d CENTER = Node.at(4.626, 4.035, 0.0);
         }
 
         // Human player station — right side

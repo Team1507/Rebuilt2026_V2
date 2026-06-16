@@ -10,6 +10,7 @@ package org.team1507.robot;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 
 import org.team1507.lib.core.util.MotorConfig;
@@ -376,6 +377,30 @@ public class Constants {
         public static final double MAX_ANGULAR_RATE =
             MAX_SPEED / FRONT_LEFT_LOCATION.getNorm();
 
+        // Robot chassis outer dimensions including bumpers
+        public static final double ROBOT_BUMPER_LENGTH_METERS = Inches.of(27).in(Meters);
+        public static final double ROBOT_BUMPER_WIDTH_METERS  = Inches.of(27).in(Meters);
+
+        // Hopper extends past the front bumper face when deployed (front side only).
+        // NOT used as a uniform radial margin — would over-expand obstacles and put
+        // valid score positions inside the expanded Hub. Kept for documentation and
+        // any future direction-aware clearance logic.
+        public static final double HOPPER_EXTENSION_FRONT_METERS = Inches.of(6).in(Meters);
+
+        // Bounding-circle radius: center → bumper corner, valid for any robot rotation.
+        // = sqrt((27/2 in)² + (27/2 in)²) ≈ 19.09 in ≈ 0.485 m
+        // Used by RRT obstacle expansion and NodeBoundsTest collision checks.
+        public static final double ROBOT_CLEARANCE_RADIUS = Math.hypot(
+            ROBOT_BUMPER_LENGTH_METERS / 2.0,
+            ROBOT_BUMPER_WIDTH_METERS  / 2.0
+        );
+
+        // Full radius with deployed hopper. NOT used for RRT obstacle margins because
+        // it expands Hub/Trench so far that Score.LEFT (Y=5.3) falls inside the expanded
+        // Hub (top Y=5.338), making the goal unreachable and forcing a direct-line fallback.
+        public static final double ROBOT_CLEARANCE_RADIUS_DEPLOYED =
+            ROBOT_CLEARANCE_RADIUS + HOPPER_EXTENSION_FRONT_METERS;
+
         // -- Motor Configs -----------------------------------------------
 
         public static final MotorConfig FRONT_LEFT_DRIVE_CONFIG =
@@ -497,6 +522,9 @@ public class Constants {
              * Increase if shots lag while moving; decrease if they lead too far.
              */
             public static final double AIM_LEAD_TIME = 0.25;
+
+            /** Proportional gain for RRT time-based path tracking (m/s per meter of position error). */
+            public static final double TIMEPATH_KP = 3.0;
         }
     }
 }

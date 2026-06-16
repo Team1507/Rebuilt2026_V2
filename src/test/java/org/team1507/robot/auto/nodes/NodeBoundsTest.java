@@ -106,16 +106,7 @@ class NodeBoundsTest {
     // actual rectangular footprint), which is the safe direction to err.
     // =========================================================================
 
-    /** FRC bumper thickness — added to the module half-diagonal for clearance. */
-    private static final double BUMPER_BUFFER_METERS = 0.1;
-
-    /**
-     * Clearance radius of the robot.
-     * FRONT_LEFT_LOCATION.getNorm() = distance from robot center to module corner.
-     * This matches the radius used for MAX_ANGULAR_RATE in Constants.
-     */
-    private static final double ROBOT_CLEARANCE_RADIUS =
-        kSwerve.FRONT_LEFT_LOCATION.getNorm() + BUMPER_BUFFER_METERS;
+    private static final double ROBOT_CLEARANCE_RADIUS = kSwerve.ROBOT_CLEARANCE_RADIUS;
 
     // =========================================================================
     // Test 1 — Field boundary
@@ -138,11 +129,14 @@ class NodeBoundsTest {
         check("Robot.Pickup.STATION_RIGHT",                         Nodes.Robot.Pickup.STATION_RIGHT);
         check("Robot.Pickup.APPROACH_LEFT",                         Nodes.Robot.Pickup.APPROACH_LEFT);
         check("Robot.Pickup.STATION_LEFT",                          Nodes.Robot.Pickup.STATION_LEFT);
+        check("Robot.Pickup.START",                                  Nodes.Robot.Pickup.START);
+        check("Robot.Pickup.END",                                    Nodes.Robot.Pickup.END);
 
         // ── Robot.Waypoint ──────────────────────────────────────────────────────────────────
         check("Robot.Waypoint.MIDFIELD_RIGHT",                      Nodes.Robot.Waypoint.MIDFIELD_RIGHT);
         check("Robot.Waypoint.MIDFIELD_CENTER",                     Nodes.Robot.Waypoint.MIDFIELD_CENTER);
         check("Robot.Waypoint.MIDFIELD_LEFT",                       Nodes.Robot.Waypoint.MIDFIELD_LEFT);
+        check("Robot.Waypoint.BUMP_CROSS_LEFT",                     Nodes.Robot.Waypoint.BUMP_CROSS_LEFT);
 
         // ── Legacy.Start ────────────────────────────────────────────────────────────────────
         // Copied from Rebuilt2026 — not yet confirmed against V2 field model.
@@ -167,9 +161,6 @@ class NodeBoundsTest {
         check("Legacy.Midfield.LEFT_LEFT_SUBWAY",                   Nodes.Legacy.Midfield.LEFT_LEFT_SUBWAY);
         check("Legacy.Midfield.LEFT_FOOTLONG_SUBWAY",               Nodes.Legacy.Midfield.LEFT_FOOTLONG_SUBWAY);
         check("Legacy.Midfield.SUBWAY_AROUND_THE_HUB",              Nodes.Legacy.Midfield.SUBWAY_AROUND_THE_HUB);
-
-        // ── Legacy.Hub ──────────────────────────────────────────────────────────────────────
-        check("Legacy.Hub.CENTER",                                  Nodes.Legacy.Hub.CENTER);
 
         // ── Legacy.Outpost ──────────────────────────────────────────────────────────────────
         check("Legacy.Outpost.RIGHT_APPROACH_POINT",                Nodes.Legacy.Outpost.RIGHT_APPROACH_POINT);
@@ -197,11 +188,14 @@ class NodeBoundsTest {
         clearanceCheck("Robot.Pickup.STATION_RIGHT",                Nodes.Robot.Pickup.STATION_RIGHT);
         clearanceCheck("Robot.Pickup.APPROACH_LEFT",                Nodes.Robot.Pickup.APPROACH_LEFT);
         clearanceCheck("Robot.Pickup.STATION_LEFT",                 Nodes.Robot.Pickup.STATION_LEFT);
+        clearanceCheck("Robot.Pickup.START",                        Nodes.Robot.Pickup.START);
+        clearanceCheck("Robot.Pickup.END",                          Nodes.Robot.Pickup.END);
 
         // ── Robot.Waypoint ──────────────────────────────────────────────────────────────────
         clearanceCheck("Robot.Waypoint.MIDFIELD_RIGHT",             Nodes.Robot.Waypoint.MIDFIELD_RIGHT);
         clearanceCheck("Robot.Waypoint.MIDFIELD_CENTER",            Nodes.Robot.Waypoint.MIDFIELD_CENTER);
         clearanceCheck("Robot.Waypoint.MIDFIELD_LEFT",              Nodes.Robot.Waypoint.MIDFIELD_LEFT);
+        clearanceCheck("Robot.Waypoint.BUMP_CROSS_LEFT",            Nodes.Robot.Waypoint.BUMP_CROSS_LEFT);
 
         // ── Legacy.Start ────────────────────────────────────────────────────────────────────
         // Copied from Rebuilt2026 — not yet confirmed against V2 field model.
@@ -228,7 +222,9 @@ class NodeBoundsTest {
         clearanceCheck("Legacy.Midfield.SUBWAY_AROUND_THE_HUB",     Nodes.Legacy.Midfield.SUBWAY_AROUND_THE_HUB);
 
         // ── Legacy.Hub ──────────────────────────────────────────────────────────────────────
-        clearanceCheck("Legacy.Hub.CENTER",                         Nodes.Legacy.Hub.CENTER);
+        // Legacy.Hub.CENTER is a rotation-pointing target — the robot faces this point to aim
+        // at the hub but never drives there. It is intentionally inside the hub structure.
+        // clearanceCheck("Legacy.Hub.CENTER", Nodes.Legacy.Hub.CENTER);  // excluded: rotation-only
 
         // ── Legacy.Outpost ──────────────────────────────────────────────────────────────────
         clearanceCheck("Legacy.Outpost.RIGHT_APPROACH_POINT",       Nodes.Legacy.Outpost.RIGHT_APPROACH_POINT);
@@ -250,7 +246,9 @@ class NodeBoundsTest {
             Nodes.Robot.Score.RIGHT,    Nodes.Robot.Score.LEFT,
             Nodes.Robot.Pickup.APPROACH_RIGHT, Nodes.Robot.Pickup.STATION_RIGHT,
             Nodes.Robot.Pickup.APPROACH_LEFT,  Nodes.Robot.Pickup.STATION_LEFT,
+            Nodes.Robot.Pickup.START,          Nodes.Robot.Pickup.END,
             Nodes.Robot.Waypoint.MIDFIELD_RIGHT, Nodes.Robot.Waypoint.MIDFIELD_CENTER, Nodes.Robot.Waypoint.MIDFIELD_LEFT,
+            Nodes.Robot.Waypoint.BUMP_CROSS_LEFT,
             Nodes.Legacy.Start.RIGHT,   Nodes.Legacy.Start.LEFT,
             Nodes.Legacy.Hub.CENTER,
             Nodes.Legacy.Outpost.RIGHT_APPROACH_POINT, Nodes.Legacy.Outpost.RIGHT_APPROACH_POINT_QUEST,
