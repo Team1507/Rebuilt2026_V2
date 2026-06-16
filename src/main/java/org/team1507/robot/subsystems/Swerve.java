@@ -661,10 +661,18 @@ public final class Swerve extends Subsystem1507 {
             Pose2d targetPose   = targetPoseSupplier.get();
             ChassisSpeeds field = getFieldRelativeSpeeds();
 
-            // Shift the aim point forward in time to compensate for robot motion.
-            // If the robot moves right at 2 m/s and lead time is 0.25 s,
-            // the compensated target shifts 0.5 m right — correcting for
-            // the time the game piece takes to travel to the target.
+            // Raw angle to hub — where we'd aim with no motion compensation.
+            Rotation2d rawHeading = targetPose.getTranslation()
+                .minus(currentPose.getTranslation())
+                .getAngle();
+
+            // Shift the aim point opposite to robot motion so the game piece —
+            // which carries the robot's translational velocity — still reaches the hub.
+            // Example: robot moving right at 2 m/s, AIM_LEAD_TIME = 0.25 s →
+            //   aim 0.5 m left of hub so the rightward drift carries the ball on target.
+            // Tune kSwerve.kTuning.AIM_LEAD_TIME in Constants.java:
+            //   too high → robot aims too far to the opposite side of motion (over-lead)
+            //   too low  → robot aims too far in the direction of motion (under-lead)
             Translation2d compensated = targetPose.getTranslation().minus(
                 new Translation2d(
                     field.vxMetersPerSecond * AIM_LEAD_TIME,
@@ -677,6 +685,18 @@ public final class Swerve extends Subsystem1507 {
                 .getAngle();
 
             double omega = computeOmega(currentPose.getRotation(), desiredHeading);
+
+            // Telemetry — publish so AIM_LEAD_TIME can be tuned on AdvantageScope.
+            // LeadOffsetDeg: how many degrees the compensation is shifting the aim.
+            // If shots miss in the direction of travel → increase AIM_LEAD_TIME.
+            // If shots miss opposite to travel direction → decrease AIM_LEAD_TIME.
+            Telemetry.set("Swerve/AimLead/RawAngleDeg",        rawHeading.getDegrees());
+            Telemetry.set("Swerve/AimLead/CompensatedAngleDeg", desiredHeading.getDegrees());
+            Telemetry.set("Swerve/AimLead/LeadOffsetDeg",
+                MathUtil.angleModulus(desiredHeading.minus(rawHeading).getRadians()) * (180.0 / Math.PI));
+            Telemetry.set("Swerve/AimLead/HeadingErrorDeg",
+                MathUtil.angleModulus(desiredHeading.minus(currentPose.getRotation()).getRadians()) * (180.0 / Math.PI));
+
             // xSupplier / ySupplier are field-relative — convert to robot-relative
             // before passing to drive() so translation is correct at any heading.
             drive(ChassisSpeeds.fromFieldRelativeSpeeds(

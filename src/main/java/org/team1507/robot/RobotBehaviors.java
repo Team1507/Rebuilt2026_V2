@@ -8,11 +8,17 @@
 
 package org.team1507.robot;
 
+import java.util.function.Supplier;
+
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 
+import org.team1507.lib.core.ml.ShooterModel;
 import org.team1507.robot.Constants.kHopper;
+import org.team1507.robot.auto.nodes.Nodes;
 import org.team1507.robot.subsystems.Agitator;
 import org.team1507.robot.subsystems.Feeder;
 import org.team1507.robot.subsystems.Hopper;
@@ -118,6 +124,33 @@ public final class RobotBehaviors {
                 )
             )
         ).withName("Behaviors.shootFixedRPM(" + rpm + ")");
+    }
+
+    /**
+     * Spins the shooter to the model-predicted RPM for the robot's current distance
+     * to the hub, then—once up to speed—runs the feeder and agitator. RPM is
+     * recomputed every cycle, so the setpoint tracks naturally if the robot moves.
+     * Stops everything on interrupt.
+     *
+     * <p>Binding: {@code driver.rightTrigger(0.5).whileTrue(RobotBehaviors.shootAutoAim(...));}
+     */
+    public static Command shootAutoAim(
+            Shooter shooter, Feeder feeder, Agitator agitator,
+            ShooterModel model, Supplier<Pose2d> poseSupplier) {
+        Translation2d hub = Nodes.FieldElements.Hub.CENTER;
+        return Commands.deadline(
+            Commands.run(() -> {
+                double d = poseSupplier.get().getTranslation().getDistance(hub);
+                shooter.setTargetRPM(model.getRPM(d));
+            }, shooter),
+            Commands.sequence(
+                Commands.waitUntil(shooter::atVelocity),
+                Commands.parallel(
+                    feeder.feedCommand(),
+                    agitator.toShooterCommand()
+                )
+            )
+        ).withName("Behaviors.shootAutoAim");
     }
 
     // ─────────────────────────────────────────────────────────────────

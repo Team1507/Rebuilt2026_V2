@@ -12,6 +12,7 @@ import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
+import org.team1507.lib.core.ml.ShooterModel;
 import org.team1507.lib.core.util.Alliance;
 import org.team1507.robot.subsystems.*;
 
@@ -47,6 +48,8 @@ public final class AutoBuilder {
     public static Agitator agitator;
     public static Feeder feeder;
     public static Shooter shooter;
+    public static ShooterModel shooterModel;
+
     // -------------------------------------------------------------------------
     // Initialization
     //
@@ -61,7 +64,8 @@ public final class AutoBuilder {
             Hopper hopper,
             Agitator agitator,
             Feeder feeder,
-            Shooter shooter) {
+            Shooter shooter,
+            ShooterModel shooterModel) {
         AutoBuilder.swerve = swerve;
 
         // Configure PathPlanner once. Uses fully-qualified class name to avoid conflict
@@ -87,9 +91,10 @@ public final class AutoBuilder {
         AutoBuilder.intakeArm = intakeArm;
         AutoBuilder.intakeRoller = intakeRoller;
         AutoBuilder.hopper = hopper;
-        AutoBuilder.agitator = agitator;
-        AutoBuilder.feeder = feeder;
-        AutoBuilder.shooter = shooter;
+        AutoBuilder.agitator     = agitator;
+        AutoBuilder.feeder       = feeder;
+        AutoBuilder.shooter      = shooter;
+        AutoBuilder.shooterModel = shooterModel;
     }
 
     // Prevent instantiation — this is a static utility class.

@@ -11,6 +11,8 @@ package org.team1507.robot;
 import java.util.function.Supplier;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.*;
 import edu.wpi.first.wpilibj2.command.*;
@@ -18,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.button.*;
 
 import static org.team1507.robot.Constants.*;
 import org.team1507.lib.core.framework.LoggedRobot;
+import org.team1507.lib.core.ml.ShooterModel;
 import org.team1507.lib.core.vision.QuestNavSubsystem;
 import org.team1507.robot.auto.AutoBuilder;
 import org.team1507.robot.auto.nodes.Nodes;
@@ -40,6 +43,12 @@ public final class Robot extends LoggedRobot {
     public final Swerve            swerve;
 
     // -------------------------------------------------------------------------
+    // ML Model
+    // -------------------------------------------------------------------------
+
+    private final ShooterModel shooterModel;
+
+    // -------------------------------------------------------------------------
     // Controllers
     // -------------------------------------------------------------------------
 
@@ -59,6 +68,9 @@ public final class Robot extends LoggedRobot {
     // =========================================================================
 
     public Robot() {
+
+        // Load shooter model before anything else — no subsystem dependencies.
+        shooterModel = ShooterModel.load();
 
         // Swerve first — questNav takes method references from it.
         swerve   = new Swerve();
@@ -91,7 +103,7 @@ public final class Robot extends LoggedRobot {
             .publishToDashboard();
 
         // Autonomous chooser
-        AutoBuilder.init(swerve, intakeArm, intakeRoller, hopper, agitator, feeder, shooter);
+        AutoBuilder.init(swerve, intakeArm, intakeRoller, hopper, agitator, feeder, shooter, shooterModel);
         autoChooser.setDefaultOption("Drive Forward",          DriveForwardAuto::build);
         autoChooser.addOption("Raymond (shoot only)",          AutoahRaymond::build);
         autoChooser.addOption("Human Player Quest",            AutoHumanPlayerQuest::build);
@@ -149,13 +161,21 @@ public final class Robot extends LoggedRobot {
         // Shooter
         // ----------------------------
 
+        // Right stick: auto-rotate to face hub while driver translates freely (matches V1)
+        bottomDriver.rightStick()
+            .whileTrue(swerve.maintainHeadingToTarget(
+                () -> new Pose2d(Nodes.FieldElements.Hub.CENTER, new Rotation2d()),
+                () -> MathUtil.applyDeadband(-bottomDriver.getLeftY(),  0.12) * kSwerve.MAX_SPEED,
+                () -> MathUtil.applyDeadband(-bottomDriver.getLeftX(),  0.12) * kSwerve.MAX_SPEED
+            ));
+
         // Right bumper: lob shot (matches old code rightBumper = LOB_RPM)
         bottomDriver.rightBumper()
             .whileTrue(RobotBehaviors.shootFixedRPM(shooter, feeder, agitator, kShooter.LOB_RPM));
 
-        // Right trigger: safe shot (replaces old model-based shot)
+        // Right trigger: ML auto-aim shot (matches V1 right trigger behavior)
         bottomDriver.rightTrigger(0.5)
-            .whileTrue(RobotBehaviors.shootFixedRPM(shooter, feeder, agitator, kShooter.SAFE_RPM));
+            .whileTrue(RobotBehaviors.shootAutoAim(shooter, feeder, agitator, shooterModel, swerve::getPose));
 
         // ── topDriver (port 1) — operator: mechanisms ──────────────────────
 

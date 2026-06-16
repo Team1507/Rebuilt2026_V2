@@ -372,6 +372,21 @@ public final class AutoSequence {
         return this;
     }
 
+    /**
+     * Shoots using the ML model's distance-predicted RPM until the auto timer reaches matchTimeSeconds.
+     * RPM is recomputed each cycle based on the robot's live pose, so it stays accurate if the
+     * robot is still settling when shooting starts. Timer-safe in branches (see {@link #shootUntil}).
+     */
+    public AutoSequence shootAutoAimUntil(double matchTimeSeconds) {
+        steps.add(Commands.deadline(
+            endAtTime(matchTimeSeconds),
+            RobotBehaviors.shootAutoAim(
+                AutoBuilder.shooter, AutoBuilder.feeder, AutoBuilder.agitator,
+                AutoBuilder.shooterModel, AutoBuilder.swerve::getPose)
+        ).withName("shootAutoAim"));
+        return this;
+    }
+
 
     // =========================================================================
     // HOW TO ADD NEW SUBSYSTEM STEPS (each year)
